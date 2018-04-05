@@ -1,0 +1,22 @@
+---
+title: Post Zero
+author: Tiernan
+description: This may well be the first and last post I write
+date: '2018-04-05'
+slug: post-zero
+categories: []
+tags: []
+---
+
+## Welcome
+
+Thanks for checking out the site!
+
+I should probably set the expectations right from the start: this blog will not be regularly updated. In fact, I will be genuinely shocked if I stick with this for more than a month or two. But in the off-chance that I do, here is what you might expect to find:
+
+  * [`#rstats`](https://twitter.com/search?q=%23rstats&src=typd&lang=en) tips
+  * side-projects spun off from my work as a data analyst with [Futurewise](www.futurewise.org)
+  * my thoughts on a variety of topics related to the focus of my studyies and career: urban planning
+  
+My purpose is pretty simple: record my ideas somewhere where I can find them later, and if anyone else finds value in them that would be a nice bonus.
+
