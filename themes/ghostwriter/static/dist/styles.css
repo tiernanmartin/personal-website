@@ -97,7 +97,7 @@ table tr { border-bottom: 1px dotted #aeadad; }
 .fluid-width-video-wrapper { margin-bottom: 40px; }
 .hidden { text-indent: -9999px; visibility: hidden; display: none; }
 .clearfix:after { content: ""; display: table; clear: both; }
-.container { margin: 0 auto; position: relative; width: 100%; max-width: 889px; }
+.container { margin: 0 auto; position: relative; width: 100%; max-width: 700px; }
 #wrapper { height: auto; min-height: 100%; margin-bottom: -265px; }
 #wrapper:after { content: ""; display: block; height: 265px; }
 .button { background: #303030; border: none; border-radius: 3px; color: #fefefe; font-size: 14px; font-weight: 700; padding: 10px 12px; text-transform: uppercase; }
@@ -113,7 +113,7 @@ table tr { border-bottom: 1px dotted #aeadad; }
 .site-title a:hover { background: #303030; }
 .site-logo { display: block; }
 .site-logo img { margin: 0; }
-.site-nav { list-style: none; margin: 28px 0 10px; padding: 0; }
+.site-nav { font-family: 'Work Sans', sans-serif !important; list-style: none; margin: 28px 0 10px; padding: 0; }
 .site-nav-item { display: inline-block; font-size: 14px; font-weight: 700; margin: 0 10px; }
 .site-nav-item a:hover { color: #424242; }
 #latest-post { display: none; }
@@ -125,7 +125,7 @@ table tr { border-bottom: 1px dotted #aeadad; }
 .post-date a, .blog-description a { color: #aeadad; }
 .post-date a:hover, .blog-description a:hover { color: #f03838; }
 .post-date:after, .blog-description:after { border-bottom: 1px dotted #303030; content: ""; display: block; margin: 40px auto 0; width: 100px; }
-.post-content p {font-family: 'Taviraj', serif;}
+.post-content p, ul, ol {font-family: 'Taviraj', serif;} 
 .post-content a:hover { border-bottom: 1px dotted #f03838; padding: 0 0 2px; }
 .post-content:last-child { margin-bottom: 0; }
 .post-content .footnote { border-spacing: 0; margin-bottom: 0; }
@@ -143,7 +143,7 @@ table tr { border-bottom: 1px dotted #aeadad; }
 .newer-posts, .older-posts { float: left; background: #f03838; color: #fefefe; font-size: 14px; font-weight: 600; margin: 0 5px; padding: 5px 10px 6px; text-transform: uppercase; }
 .newer-posts:hover, .older-posts:hover { background: #303030; }
 .page-number { display: none; }
-.post-list { list-style: none; padding: 0; }
+.post-list { font-family: 'Work Sans', sans-serif; list-style: none; padding: 0; }
 .post-stub { border-bottom: 1px dotted #303030; margin: 0; position: relative; }
 .post-stub:first-child { padding-top: 0; }
 .post-stub a { -webkit-transition: all .2s ease-in-out; -moz-transition: all .2s ease-in-out; transition: all .2s ease-in-out; display: block; color: #424242; padding: 20px 5px; }
