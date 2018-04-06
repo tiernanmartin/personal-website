@@ -1,0 +1,12 @@
+---
+title: "About"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+<p align="center">
+![](/page/about_files/headshot2015-red-circle.png)
+</p>
