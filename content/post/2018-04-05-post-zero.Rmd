@@ -16,7 +16,8 @@ I should probably set the expectations right from the start: this blog will not 
 
   * [`#rstats`](https://twitter.com/search?q=%23rstats&src=typd&lang=en) tips
   * side-projects spun off from my work as a data analyst with [Futurewise](www.futurewise.org)
-  * my thoughts on a variety of topics related to the focus of my studyies and career: urban planning
+  * my thoughts on a variety of topics related to the focus of my studies and career: urban planning
   
 My purpose is pretty simple: record my ideas somewhere where I can find them later, and if anyone else finds value in them that would be a nice bonus.
 
+Stay tuned for fresh posts in the coming weeks. 
