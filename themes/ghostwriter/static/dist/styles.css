@@ -144,15 +144,16 @@ table tr { border-bottom: 1px dotted #aeadad; }
 .newer-posts:hover, .older-posts:hover { background: #303030; }
 .page-number { display: none; }
 .post-list { font-family: 'Work Sans', sans-serif; list-style: none; padding: 0; }
+.post-list-date { font-size: 200%; font-weight: 600; text-align: right;}
 .post-stub { border-bottom: 1px dotted #303030; margin: 0; position: relative; }
 .post-stub:first-child { padding-top: 0; }
-.post-stub a { -webkit-transition: all .2s ease-in-out; -moz-transition: all .2s ease-in-out; transition: all .2s ease-in-out; display: block; color: #424242; padding: 20px 5px; }
+.post-stub a { -webkit-transition: all .2s ease-in-out; -moz-transition: all .2s ease-in-out; transition: all .2s ease-in-out; display: inline-block; color: #424242; padding: 20px 5px; }
 .post-stub a:hover { background: #fcf5f5; color: #f03838; padding: 20px 12px; }
 .post-stub a:hover .post-stub-tag { background: #f03838; }
 .post-stub-tag { background: #303030; border-radius: 3px; color: #fff; float: right; font-size: 10px; margin: 7px 0 0; padding: 0 5px; text-transform: uppercase; }
-.post-stub-title { display: inline-block; margin: 0; text-transform: none; }
+.post-stub-title { display: inline-block;margin: 0px 0px 0px 0px; text-transform: none; }
 .post-stub-description { display: inline-block; margin: 0; text-transform: none; }
-.post-stub-date { display: inline-block; text-align: right; float: right;} 
+.post-stub-date { display: inline-block; margin: 0; text-align: right; float: right; text-transform: none;padding: 20px 5px;} 
 .next-posts-link a, .previous-posts-link a { display: block; padding: 8px 11px; }
 .author-profile { margin: 0 40px; }
 .author-profile:after { border-bottom: 1px dotted #303030; content: ""; display: block; margin: 40px auto 0; width: 100px; }

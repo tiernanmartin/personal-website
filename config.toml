@@ -26,7 +26,7 @@ Paginate = 5
     shareFacebook = false
     shareGooglePlus = false
     shareLinkedIn = false
-    dateFormat = "January 2, 2006"
+    dateFormat = "Jan 2"
     highlightJsUrl = ""
     highlightJsLocalUrl = ""
 
@@ -34,7 +34,7 @@ Paginate = 5
     post = "/:year/:month/:day/:slug/"
 
 [[menu.main]]
-    name = "Blog"
+    name = "Archive"
     url = "/post/"
     weight = 1
 

@@ -418,6 +418,12 @@ table {
     padding: 0;
 }
 
+.post-list-date { 
+    font-size: 200%; 
+    font-weight: 600; 
+    text-align: right;
+}
+
 .post-stub {
     border-bottom: 1px dotted $secondary;
     margin: 0;
@@ -429,7 +435,7 @@ table {
         -webkit-transition: all 0.2s ease-in-out;
         -moz-transition: all 0.2s ease-in-out;
         transition: all 0.2s ease-in-out;
-        display: block;
+        display: inline-block;
         color: #424242;
         padding: 20px 5px;
 
@@ -456,7 +462,7 @@ table {
 
 .post-stub-title {
     display: inline-block;
-    margin: 0;
+    margin: 0px 0px 0px 25px;
     text-transform: none;
 }
 
@@ -468,8 +474,11 @@ table {
 
 .post-stub-date {
     display: inline-block;
+    margin: 0;
     text-align: right;
     float: right; 
+    text-transform: none;
+    padding: 20px 5px;
 }
 
 .next-posts-link a,
