@@ -6,7 +6,7 @@ copyright = "Tiernan Martin"
 disqusShortname = "mutate-city"
 googleAnalytics = "XXX"
 ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
-Paginate = 5
+Paginate = 3
 
 [Author]
     name = "Tiernan Martin"

@@ -5,7 +5,7 @@
 
     <ol class="post-list">
         {{ $pag := .Paginate (where .Data.Pages "Type" "post") }}
-        {{ range first 3 $pag.Pages }}
+        {{ range $pag.Pages }}
             {{ partial "post-stub.html" . }}
         {{ end }}
     </ol>
