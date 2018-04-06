@@ -10,7 +10,7 @@
             <span class="post-stub-tag">Featured</span>
         {{ end }}
         </a>
-         <p class="post-stub-date" datetime="{{ .Date.Format "Jan 2" }}">{{ dateFormat (default "Mon, Jan 2, 2006" .Site.Params.dateFormat) .Date }}</p> 
+         <aside class="post-stub-date" datetime="{{ .Date.Format "Jan 2" }}">{{ dateFormat (default "Mon, Jan 2, 2006" .Site.Params.dateFormat) .Date }}</aside> 
     
     </article>
 </li>

@@ -479,6 +479,7 @@ table {
     float: right; 
     text-transform: none;
     padding: 20px 5px;
+    position: relative;
 }
 
 .next-posts-link a,
@@ -687,12 +688,14 @@ table {
         display: block;
     }
 
-    .post-list {
+    .post-list,
+    .post-list-date, {
         margin-top: 20px;
     }
 
     .post-container,
     .post-list,
+    .post-list-date,
     .author-profile {
         margin-right: 25px;
         margin-left: 25px;

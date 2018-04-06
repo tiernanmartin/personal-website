@@ -86,7 +86,7 @@ img[src$="align-right"] { float: right; margin-left: 40px; }
 pre { font-family: 'Fira Mono', monospace; background: #f8f8f8; border: 1px solid #ddd; border-radius: 3px; box-shadow: 5px 5px 5px #eee;margin: 0 0 20px; overflow-x: auto; padding: 10px; font-size: 16px; }
 pre code { padding: 0; }
 code { font-family: 'Fira Mono', monospace; padding: 2px 4px; font-size: 90%; color: #f03838; background-color: #f8f8f8; border-radius: 4px; }
-hr { border: none; border-bottom: 1px dotted #303030; margin: 45px 0; }
+hr { width: 100px; border: none; border-bottom: 1px dotted #303030; margin: 40px auto; align-content: center;}
 table { margin-bottom: 40px; width: 100%; }
 table tbody > tr:nth-child(odd) > td, table tbody > tr:nth-child(odd) > th { background-color: #f7f7f3; }
 table th { padding: 0 10px 10px; text-align: left; }
@@ -143,17 +143,18 @@ table tr { border-bottom: 1px dotted #aeadad; }
 .newer-posts, .older-posts { float: left; background: #f03838; color: #fefefe; font-size: 14px; font-weight: 600; margin: 0 5px; padding: 5px 10px 6px; text-transform: uppercase; }
 .newer-posts:hover, .older-posts:hover { background: #303030; }
 .page-number { display: none; }
-.post-list { font-family: 'Work Sans', sans-serif; list-style: none; padding: 0; }
-.post-list-date { font-size: 200%; font-weight: 600; text-align: right;}
+.post-list, .post-list-archive { font-family: 'Work Sans', sans-serif; list-style: none; padding: 0;}
+.post-list-archive {width: 85%; margin-bottom: 50px;}
+.post-list-date { font-size: 150%; font-weight: 600; text-align: right; float: right; width: 15%;}
 .post-stub { border-bottom: 1px dotted #303030; margin: 0; position: relative; }
 .post-stub:first-child { padding-top: 0; }
 .post-stub a { -webkit-transition: all .2s ease-in-out; -moz-transition: all .2s ease-in-out; transition: all .2s ease-in-out; display: inline-block; color: #424242; padding: 20px 5px; }
-.post-stub a:hover { background: #fcf5f5; color: #f03838; padding: 20px 12px; }
-.post-stub a:hover .post-stub-tag { background: #f03838; }
+.post-stub a:hover { color: #f03838; padding: 20px 12px; }
+.post-stub a:hover .post-stub-tag {  }
 .post-stub-tag { background: #303030; border-radius: 3px; color: #fff; float: right; font-size: 10px; margin: 7px 0 0; padding: 0 5px; text-transform: uppercase; }
 .post-stub-title { display: inline-block;margin: 0px 0px 0px 0px; text-transform: none; }
 .post-stub-description { display: inline-block; margin: 0; text-transform: none; }
-.post-stub-date { display: inline-block; margin: 0; text-align: right; float: right; text-transform: none;padding: 20px 5px;} 
+.post-stub-date { display: inline-block; margin: 0; text-align: right; float: right; text-transform: none;padding: 20px 5px; position: relative;} 
 .next-posts-link a, .previous-posts-link a { display: block; padding: 8px 11px; }
 .author-profile { margin: 0 40px; }
 .author-profile:after { border-bottom: 1px dotted #303030; content: ""; display: block; margin: 40px auto 0; width: 100px; }
@@ -200,8 +201,8 @@ table tr { border-bottom: 1px dotted #aeadad; }
  .author-profile:after, .author-profile:before { margin-top: 20px; }
  .post-stub-title { display: block; }
  .post-stub-date:before { content: ""; display: block; }
- .post-list { margin-top: 20px; }
- .post-container, .post-list, .author-profile { margin-right: 25px; margin-left: 25px; }
+ .post-list, .post-list-archive, .post-list-date { margin-top: 20px; }
+ .post-container, .post-list, .post-list-archive, .post-list-date, .author-profile { margin-right: 25px; margin-left: 25px; }
  .post-tags { width: 100%; }
  .post-stub a, .post-stub a:hover { padding-top: 12px; padding-bottom: 12px; }
  .share { float: left; margin-top: 20px; }
