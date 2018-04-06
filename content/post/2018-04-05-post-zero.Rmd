@@ -8,8 +8,6 @@ categories: []
 tags: []
 ---
 
-## Welcome
-
 Thanks for checking out the site!
 
 I should probably set the expectations right from the start: this blog will *not* be regularly updated. In fact, I will be genuinely shocked if I stick with this for more than a month or two. But in the off-chance that I do, here is what you might expect to find:
