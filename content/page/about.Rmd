@@ -8,5 +8,14 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 <p align="center">
-![](/page/about_files/headshot2015-red-circle.png)
+![](/page/about_files/headshot2015-red-circle.png){width=33%}
 </p>
+
+## Tiernan Martin
+
+I'm a data analyst with an interest in urban planning. 
+
+I work for [Futurewise](http://futurewise.org/) in [Seattle, Washington <i class="fa fa-map-marker"></i> ](https://goo.gl/maps/djjtTaLfLj52)
+
+Get in touch: [\@maynardandking](https://twitter.com/maynardandking)
+
