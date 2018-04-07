@@ -15,7 +15,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 I'm a data analyst with an interest in urban planning. 
 
-I work for [Futurewise](http://futurewise.org/) in [<i class="fa fa-map-marker-alt"></i> Seattle, Washington](https://goo.gl/maps/djjtTaLfLj52)
+I work for [Futurewise](http://futurewise.org/) in [<i class="fa fa-map-marker"></i> Seattle, Washington](https://goo.gl/maps/djjtTaLfLj52)
 
 Get in touch: [\@maynardandking](https://twitter.com/maynardandking)
 
