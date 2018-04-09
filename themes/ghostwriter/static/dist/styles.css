@@ -63,7 +63,7 @@ template { display: none; }
 .hljs-emphasis { font-style: italic; }
 .hljs-strong { font-weight: bold; }
 html, body { height: 100%; }
-body { background: #fefefe; color: #424242; font-family: 'Work Sans', sans-serif; font-size: 18px; }
+body { background: #fefefe; color: #424242; font-family: 'Work Sans', sans-serif; font-size: 16px; }
 h1, h2, h3, h4, h5, h6 { margin-bottom: 20px; text-transform: none; }
 h1 { font-size: 26px; }
 h2 { font-size: 24px; }
@@ -180,6 +180,7 @@ table tr { border-bottom: 1px dotted #aeadad; }
  .post-stub-tag { display: none; }
 }
 @media only screen and (max-width: 600px) {
+body { font-size: 16px; }
  h1, h2 { margin-bottom: 20px; }
  p { margin-bottom: 20px; }
  ul, ol { margin-bottom: 20px; }
@@ -212,6 +213,7 @@ table tr { border-bottom: 1px dotted #aeadad; }
  .footer .button-jump-top { clear: both; display: inline-block; float: none; }
 }
 @media only screen and (max-width: 400px) {
+  body { font-size: 16px; }
  .site-header { padding-top: 40px; }
  .post-title, .page-title, .author-name, .author-heading { font-size: 30px; line-height: 1.2; word-wrap: break-word; overflow-wrap: break-word; }
  .post-date, .blog-description, .author-meta { line-height: 1.6; }
