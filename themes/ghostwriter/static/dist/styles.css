@@ -118,7 +118,7 @@ table tr { border-bottom: 1px dotted #aeadad; }
 .site-nav-item a:hover { color: #424242; }
 #latest-post { display: none; }
 .post-container { margin: 0 40px; }
-.post-header { border-bottom: 6px solid #303030; margin: 0px 0px 20px 0px; padding: 0px 15px 20px 15px; text-align: center; text-transform: uppercase; }
+.post-header { border-bottom: 6px solid #303030; margin: 0px 0px 30px 0px; padding: 0px 15px 20px 15px; text-align: center; text-transform: uppercase; }
 .post-title, .page-title { font-size: 52px; font-weight: 700; margin: 15px 0; text-align: center; text-transform: uppercase; }
 .page-title { margin: 15px 40px; }
 .post-date, .blog-description { color: #aeadad; font-size: 14px; font-weight: 600; line-height: 1; margin: 25px 0 0; }
@@ -191,19 +191,19 @@ table tr { border-bottom: 1px dotted #aeadad; }
  .site-title { float: none; margin-bottom: 15px; }
  .site-title a { float: none; }
  .site-title + .button-square { margin-left: 0; }
- .site-nav-item { display: block; margin: 15px 0; }
- .post-header { margin: 0px 15px 20px 15px; padding: 0px 15px 20px 15px; }
+ .site-nav-item { display: block; margin: 15px 0; } 
+ .post-header {padding: 0px;}
  .post-header p { word-wrap: break-word; overflow-wrap: break-word; }
  .post-title, .page-title, .author-name, .author-heading { font-size: 42px; margin-top: 5px; word-wrap: break-word; overflow-wrap: break-word; }
- .post-date, .blog-description, .author-meta { margin-top: 20px; }
+ .post-date, .blog-description, .author-meta { margin-top: 20px; margin-bottom: 20px;}
  .post-date:after, .post-date:before, .blog-description:after,
- .blog-description:before, .author-meta:after, .author-meta:before { margin-top: 30px; }
+ .blog-description:before, .author-meta:after, .author-meta:before { margin-top: 30px;}
  .author-profile:after, .author-profile:before { margin-top: 20px; }
  .post-stub-title { display: block; }
  .post-stub-date:before { content: ""; display: block; }
  aside.post-stub-date { float: none; padding: 0px 5px 20px 5px; }
  .post-list, .post-list-archive, .post-list-date { margin-top: 20px; }
- .post-container, .post-list, .post-list-archive, .post-list-date, .author-profile { margin-right: 25px; margin-left: 25px; }
+ .post-container, .post-list, .post-list-archive, .post-list-date, .author-profile { margin-right: 30px; margin-left: 30px; }
  .post-tags { width: 100%; }
  .post-stub a, .post-stub a:hover { padding-top: 12px; padding-bottom: 12px; }
  .share { float: left; margin-top: 20px; }
@@ -213,15 +213,13 @@ table tr { border-bottom: 1px dotted #aeadad; }
  .footer .button-jump-top { clear: both; display: inline-block; float: none; }
 }
 @media only screen and (max-width: 400px) { 
- .site-header { padding-top: 40px; }
- .post-header { margin: 0px 15px 20px 15px; padding: 0px 15px 20px 15px; }
+ .site-header { padding-top: 40px; } 
  .post-title, .page-title, .author-name, .author-heading { font-size: 30px; line-height: 1.2; word-wrap: break-word; overflow-wrap: break-word; }
  .post-date, .blog-description, .author-meta { line-height: 1.6; }
- .post-date, .blog-description, .author-meta { margin-top: 10px; }
+ .post-date, .blog-description, .author-meta { margin-top: 10px; margin-bottom: 20px; }
  .post-date:after, .post-date:before, .blog-description:after,
  .blog-description:before, .author-meta:after, .author-meta:before { margin-top: 20px; } 
- .author-profile:after, .author-profile:before { margin-top: 10px; }
- .post-container, .post-list, .author-profile { margin-right: 15px; margin-left: 15px; }
+ .author-profile:after, .author-profile:before { margin-top: 10px; } 
  .author-avatar { display: block; margin: 0 auto 18px; }
  .author-meta span { display: block; margin: 18px 0; }
  .footer-copyright { padding: 0 10px; }
