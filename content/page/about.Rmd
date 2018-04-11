@@ -8,7 +8,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 <p align="center">
-![](/page/about_files/headshot2015-red-circle-optimized){width=33%}
+![](/page/about_files/headshot2015-red-circle-optimized.png){width=33%}
 </p>
 
 ## Tiernan Martin
