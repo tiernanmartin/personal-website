@@ -195,7 +195,7 @@ table tr { border-bottom: 1px dotted #aeadad; }
  .post-header {margin-right: 30px; margin-left: 30px; padding: 0px;}
  .post-header p { word-wrap: break-word; overflow-wrap: break-word; }
  .post-title, .page-title, .author-name, .author-heading { font-size: 42px; margin-top: 5px; word-wrap: break-word; overflow-wrap: break-word; }
- .post-content.clearfix p, ul, ol {line-height: 1.25; font-size: 17px;}
+ .post-content.clearfix p, ul, ol {line-height: 1.5; font-size: 18px;}
  .post-date, .blog-description, .author-meta { margin-top: 20px; margin-bottom: 20px;}
  .post-date:after, .post-date:before, .blog-description:after,
  .blog-description:before, .author-meta:after, .author-meta:before { margin-top: 30px;}
