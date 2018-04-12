@@ -180,7 +180,7 @@ table tr { border-bottom: 1px dotted #aeadad; }
 @media only screen and (max-width: 800px) {
  .post-stub-tag { display: none; }
 }
-@media only screen and (max-width: 600px) { 
+@media only screen and (max-width: 700px) { 
  h1, h2 { margin-bottom: 20px; }
  p { margin-bottom: 20px; }
  ul, ol { margin-bottom: 20px; }
@@ -193,9 +193,10 @@ table tr { border-bottom: 1px dotted #aeadad; }
  .site-title a { float: none; }
  .site-title + .button-square { margin-left: 0; }
  .site-nav-item { display: block; margin: 15px 0; } 
- .post-header {padding: 0px;}
+ .post-header {margin-right: 30px; margin-left: 30px; padding: 0px;}
  .post-header p { word-wrap: break-word; overflow-wrap: break-word; }
  .post-title, .page-title, .author-name, .author-heading { font-size: 42px; margin-top: 5px; word-wrap: break-word; overflow-wrap: break-word; }
+ .post-content.clearfix p, ul, ol {line-height: 1.5; font-size: 18px;}
  .post-date, .blog-description, .author-meta { margin-top: 20px; margin-bottom: 20px;}
  .post-date:after, .post-date:before, .blog-description:after,
  .blog-description:before, .author-meta:after, .author-meta:before { margin-top: 30px;}
@@ -204,7 +205,7 @@ table tr { border-bottom: 1px dotted #aeadad; }
  .post-stub-date:before { content: ""; display: block; }
  aside.post-stub-date { float: none; padding: 0px 5px 20px 5px; }
  .post-list, .post-list-archive, .post-list-date { margin-top: 20px; }
- .post-container, .post-list, .post-list-archive, .post-list-date, .author-profile { margin-right: 30px; margin-left: 30px; }
+ article.post-container, .post-list, .post-list-archive, .post-list-date, .author-profile { margin-right: 30px; margin-left: 30px; }
  .post-tags { width: 100%; }
  .post-stub a, .post-stub a:hover { padding-top: 12px; padding-bottom: 12px; }
  .share { float: left; margin-top: 20px; }

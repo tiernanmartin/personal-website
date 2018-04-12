@@ -3,3 +3,5 @@ Note
 ----
 
 This is the repo for Tiernan Martin's personal website (WIP)
+
+All content contained in this repo are licensed under a [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/).

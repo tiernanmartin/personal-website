@@ -1,0 +1,15 @@
+<li class="post-stub" itemprop="blogPost" itemscope="" itemtype="https://schema.org/BlogPosting">
+  <article>
+   
+    <a href="{{ .Permalink }}" itemprop="url" title="Go to post detail"> 
+    <strong class="post-stub-title" itemprop="name">{{ .Title }}</strong>  
+        {{ if .Description }}
+            <p class="post-stub-description">{{ .Description | truncate 65 }}</p>
+        {{ end }}
+        {{ with .Params.featured }}
+            <span class="post-stub-tag">Featured</span>
+        {{ end }}
+        </a> 
+    
+    </article>
+</li>
