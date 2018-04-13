@@ -18,7 +18,7 @@ Paginate = 3
 [Params]
     intro = true
     headline = "Mutate(City)"
-    description = "Data Science Applied to Urban Planning"
+    description = "Data Analytics Applied to the Built Environment"
     twitter = "https://twitter.com/maynardandking"
     github = "https://github.com/tiernanmartin" 
     opengraph = true
