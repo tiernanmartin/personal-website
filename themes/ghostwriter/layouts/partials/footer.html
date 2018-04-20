@@ -35,6 +35,10 @@
             <script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/r.min.js"></script>
         {{ end }}
         
+        <script> hljs.configure({languages: []}); </script>
+        <script> hljs.initHighlightingOnLoad(); </script>
+
+        
         <script src="{{ .Site.BaseURL }}js/scripts.js"></script>
     </body>
 </html>
