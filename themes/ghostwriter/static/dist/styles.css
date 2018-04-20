@@ -84,9 +84,9 @@ img { display: block; margin: 40px 0; width: auto; max-width: 100%; }
 img[src$="align-center"] { margin: auto; }
 img[src$="align-left"] { float: left; margin-right: 40px; }
 img[src$="align-right"] { float: right; margin-left: 40px; }
-pre { font-family: 'Fira Mono', monospace; background: #f8f8f8; border: 1px solid #ddd; border-radius: 3px; box-shadow: 5px 5px 5px #eee;margin: 0 0 20px; overflow-x: auto; padding: 10px; font-size: 16px; }
+pre { font-family: 'Fira Code', monospace; background: #f8f8f8; border: 1px solid #ddd; border-radius: 3px; box-shadow: 5px 5px 5px #eee;margin: 0 0 20px; overflow-x: auto; padding: 10px; font-size: 80%; }
 pre code { padding: 0; }
-code { font-family: 'Fira Mono', monospace; padding: 2px 4px; font-size: 90%; color: #f03838; background-color: #f8f8f8; border-radius: 4px; }
+code { font-family: 'Fira Code', monospace; padding: 2px 4px; font-size: 90%; color: #f03838; background-color: #f8f8f8; border-radius: 4px; }
 hr { width: 100px; border: none; border-bottom: 1px dotted #303030; margin: 40px auto; align-content: center;}
 table { margin-bottom: 40px; width: 100%; }
 table tbody > tr:nth-child(odd) > td, table tbody > tr:nth-child(odd) > th { background-color: #f7f7f3; }
