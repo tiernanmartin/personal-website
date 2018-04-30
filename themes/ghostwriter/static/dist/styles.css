@@ -85,8 +85,8 @@ img[src$="align-center"] { margin: auto; }
 img[src$="align-left"] { float: left; margin-right: 40px; }
 img[src$="align-right"] { float: right; margin-left: 40px; }
 pre { font-family: 'Fira Code', monospace; background: #f8f8f8; border: 1px solid #ddd; border-radius: 3px; box-shadow: 5px 5px 5px #eee;margin: 0 0 20px; overflow-x: auto; padding: 10px; font-size: 80%; }
-pre code { padding: 0; }
-code { font-family: 'Fira Code', monospace; padding: 2px 4px; font-size: 90%; color: #f03838; background-color: #f8f8f8; border-radius: 4px; }
+pre code { font-size: 100%; padding: 0; white-space: pre; word-spacing: normal; word-break: normal; word-wrap: normal; line-height: 1.5; tab-size: 4; hyphens: none;}
+code { font-family: 'Fira Code', monospace; padding: 2px 4px; font-size: 80%; color: #f03838; background-color: #f8f8f8; border-radius: 4px; }
 hr { width: 100px; border: none; border-bottom: 1px dotted #303030; margin: 40px auto; align-content: center;}
 table { margin-bottom: 40px; width: 100%; border-collapse: collapse;}
 table tbody { background-color: transparent; }
