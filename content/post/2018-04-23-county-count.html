@@ -1,0 +1,398 @@
+---
+title: County Count
+author: Tiernan
+date: '2018-05-07'
+categories:
+  - Tutorial
+tags:
+  - data visualization
+  - R
+  - sf
+description: Building a plot from start to finish
+slug: county-count
+output:
+  blogdown::html_page:
+    dev: svg
+draft: false
+---
+
+
+
+<div class="figure">
+<img src="/post/2018-04-23-county-count_files/county-count-plot-final.svg" />
+
+</div>
+<p>Creating engaging data graphics takes a ton of work!</p>
+<p>Case in point: the image above took me half a day of data wrangling, documentation skimming, and parameter tweaking before I got it right - and that’s just one plot!</p>
+<p>Most of my data visualization work serves a single purpose: to help <em>me</em> better understand the structure and content of the data. In the early stages of an analysis I produce many quick’n’dirty plots and try to avoid getting attached to any single idea. But eventually I pick one or two to be refined into polished graphics and that work requires a different set of tools and priorities.</p>
+<p>This post demonstrates a few of the techniques I use when I’m preparing a plot for an external audience (as opposed to one that is just meant for me). Below, I follow the path of the North Carolina Counties plot (see above) from rough sketch to final draft, highlighting some handy functions, packages, and code patterns along the way. With any luck, this may be of some use to others and at the very least it will help me remember some of these obscure <a href="http://ggplot2.tidyverse.org"><code>ggplot2</code></a> tricks.</p>
+<p>Enough introduction - let’s begin.</p>
+<div id="the-example-dataset-the-counties-of-north-carolina" class="section level3">
+<h3>The Example Dataset: The Counties of North Carolina</h3>
+<p>When I sat down to write this post I considered several different datasets before eventually deciding to use the North Carolina Sudden Infant Death Syndrome (SIDS) dataset (<code>nc</code>). I’ll admit that may seem like an odd choice for an example, as the data are related neither to the focus of my career (urban planning) nor to the place I live (Seattle, Washington). I basically have no connection to these data, so why use them in a post about creating graphics?</p>
+<p>I want to introduce <code>nc</code> for three reasons:</p>
+<ol style="list-style-type: decimal">
+<li><strong>Easy Access:</strong> It’s easy to access because it comes bundled in the simple features (<code>sf</code>) package.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></li>
+<li><strong>Relatable Geometries:</strong> The county boundaries are <a href="http://wiki.gis.com/wiki/index.php/Polygon">polygon</a> geometry objects, which are one of the more common types of spatial objects and are easy for viewers to understand.</li>
+<li><strong>Reprex-ible:</strong> The dataset is small and simple enough to be used in a reprex<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a>, which means that it can be easily adapted to illustrate a problem and used get help from others.</li>
+</ol>
+<p>But given my lack of public health expertise I doubt I’ll be able to produce an informative graphic with the SIDS data contained in the dataset.<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a> Instead, I’ll search for more accessible data (which can be joined to <code>nc</code>’s spatial geometries) in my go-to open data portal:</p>
+<div class="figure">
+<img src="/post/2018-04-23-county-count_files/wikipedia-nc-search.gif" />
+
+</div>
+<p>Prompted by the Wikipedia search bar autocomplete, I find that the <a href="https://en.wikipedia.org/wiki/List_of_counties_in_North_Carolina">“List of counties in North Carolina”</a> page contains a table with several columns that might be interesting to visualize in a plot:</p>
+<div class="figure">
+<img src="/post/2018-04-23-county-count_files/wiki-table.png" />
+
+</div>
+<p>With the spatial data from <code>nc</code> and the descriptive data from the Wikipedia table, I’m ready to begin the process of creating a data visualization graphic.</p>
+</div>
+<div id="loading-the-data" class="section level3">
+<h3>Loading the data</h3>
+<p>We’ll use functions from several packages during this post, so the first step is to load the packages:</p>
+<pre class="r"><code>library(rvest)
+library(janitor)  
+library(sf)
+library(tidyverse) </code></pre>
+<p>As I said before, the <code>nc</code> dataset gets installed as one of the example datasets in the <code>sf</code> package. The data is stored in the package’s <a href="https://github.com/r-spatial/sf/tree/master/inst/gpkg"><code>gpkg/</code></a> directory<a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a>, so we’ll begin by loading it with <code>read_sf()</code> and taking a look at the data with <code>glimpse()</code>, my preview function of choice<a href="#fn5" class="footnoteRef" id="fnref5"><sup>5</sup></a>:</p>
+<pre class="r"><code>nc &lt;- read_sf(system.file(&quot;gpkg/nc.gpkg&quot;,package = &quot;sf&quot;)) 
+
+glimpse(nc)
+## Observations: 100
+## Variables: 15
+## $ AREA      &lt;dbl&gt; 0.114, 0.061, 0.143, 0.070, 0.153, 0.097, 0.062, 0.0...
+## $ PERIMETER &lt;dbl&gt; 1.442, 1.231, 1.630, 2.968, 2.206, 1.670, 1.547, 1.2...
+## $ CNTY_     &lt;dbl&gt; 1825, 1827, 1828, 1831, 1832, 1833, 1834, 1835, 1836...
+## $ CNTY_ID   &lt;dbl&gt; 1825, 1827, 1828, 1831, 1832, 1833, 1834, 1835, 1836...
+## $ NAME      &lt;chr&gt; &quot;Ashe&quot;, &quot;Alleghany&quot;, &quot;Surry&quot;, &quot;Currituck&quot;, &quot;Northamp...
+## $ FIPS      &lt;chr&gt; &quot;37009&quot;, &quot;37005&quot;, &quot;37171&quot;, &quot;37053&quot;, &quot;37131&quot;, &quot;37091&quot;...
+## $ FIPSNO    &lt;dbl&gt; 37009, 37005, 37171, 37053, 37131, 37091, 37029, 370...
+## $ CRESS_ID  &lt;int&gt; 5, 3, 86, 27, 66, 46, 15, 37, 93, 85, 17, 79, 39, 73...
+## $ BIR74     &lt;dbl&gt; 1091, 487, 3188, 508, 1421, 1452, 286, 420, 968, 161...
+## $ SID74     &lt;dbl&gt; 1, 0, 5, 1, 9, 7, 0, 0, 4, 1, 2, 16, 4, 4, 4, 18, 3,...
+## $ NWBIR74   &lt;dbl&gt; 10, 10, 208, 123, 1066, 954, 115, 254, 748, 160, 550...
+## $ BIR79     &lt;dbl&gt; 1364, 542, 3616, 830, 1606, 1838, 350, 594, 1190, 20...
+## $ SID79     &lt;dbl&gt; 0, 3, 6, 2, 3, 5, 2, 2, 2, 5, 2, 5, 4, 4, 6, 17, 4, ...
+## $ NWBIR79   &lt;dbl&gt; 19, 12, 260, 145, 1197, 1237, 139, 371, 844, 176, 59...
+## $ geom      &lt;MULTIPOLYGON [Â°]&gt; MULTIPOLYGON (((-81.47276 3..., MULTIP...</code></pre>
+<p>After staring at the <code>glimpse()</code> output for a bit, I’ll hazard a guess that the variables can be divided into four categories:</p>
+<table>
+<colgroup>
+<col width="35%" />
+<col width="64%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Category</th>
+<th>Variables</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Qualitative (Identifier)</td>
+<td><code>CNTY_</code>, <code>CNTY_ID</code>, <code>NAME</code>, <code>FIPS</code>, <code>FIPSNO</code>, <code>CRESS_ID</code></td>
+</tr>
+<tr class="even">
+<td>Quantitative (Incidence Count)</td>
+<td><code>BIR74</code>, <code>SID74</code>, <code>NWBIR74</code>, <code>BIR79</code>, <code>SID79</code>, <code>NWBIR79</code></td>
+</tr>
+<tr class="odd">
+<td>Quantitative (Spatial)</td>
+<td><code>AREA</code>, <code>PERIMETER</code></td>
+</tr>
+<tr class="even">
+<td>Geometry</td>
+<td><code>geom</code></td>
+</tr>
+</tbody>
+</table>
+<p>My plan is to join the rows from the Wikipedia table to the <code>nc</code> rows using the county name as the join key, so I’ll probably only keep the <code>NAME</code> and <code>geom</code> columns and the rest can be dropped.</p>
+<p>Now I’ll scrape the Wikiepedia page using the <a href="https://github.com/hadley/rvest"><code>rvest</code></a> package and prepare the column names for joining:</p>
+<pre class="r"><code>url &lt;- &quot;https://en.wikipedia.org/wiki/List_of_counties_in_North_Carolina&quot;
+
+nc_county_table &lt;- read_html(url) %&gt;% 
+  html_node(&quot;table.wikitable&quot;) %&gt;% 
+  html_table(header = TRUE) %&gt;% 
+  as_tibble %&gt;% 
+  clean_names(case = &quot;screaming_snake&quot;) %&gt;% # remove unwanted characters from names and applies a specific case
+  rename_all(~ str_remove_all(.x, &quot;_\\d+&quot;)) %&gt;% 
+  mutate(NAME = str_remove(COUNTY,&quot; County&quot;)) %&gt;% # transform COUNTY to match nc$NAME
+  select(NAME, FIPS_CODE:MAP) 
+
+glimpse(nc_county_table)
+## Observations: 100
+## Variables: 9
+## $ NAME                &lt;chr&gt; &quot;Alamance&quot;, &quot;Alexander&quot;, &quot;Alleghany&quot;, &quot;Ans...
+## $ FIPS_CODE           &lt;int&gt; 1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23,...
+## $ COUNTY_SEAT         &lt;chr&gt; &quot;Graham&quot;, &quot;Taylorsville&quot;, &quot;Sparta&quot;, &quot;Wades...
+## $ CREATED             &lt;int&gt; 1849, 1847, 1859, 1750, 1799, 1911, 1712, ...
+## $ ORIGIN              &lt;chr&gt; &quot;Orange County&quot;, &quot;Caldwell County, Iredell...
+## $ ETYMOLOGY           &lt;chr&gt; &quot;The Battle of Alamance which was derived ...
+## $ POPULATION_ESTIMATE &lt;chr&gt; &quot;7005153291000000000&lt;U+2660&gt;153,291&quot;, &quot;7004370870...
+## $ AREA                &lt;chr&gt; &quot;7002435000000000000&lt;U+2660&gt;435 sq mi\n(700311270...
+## $ MAP                 &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA...</code></pre>
+<p>The two datasets can now be joined:</p>
+<pre class="r"><code>nc_ready &lt;- nc %&gt;% 
+  select(NAME) %&gt;% 
+  full_join(nc_county_table, by = &quot;NAME&quot;) %&gt;% 
+  rename(YEAR = CREATED) %&gt;% # YEAR is a clearer column name
+  st_sf
+
+glimpse(nc_ready)
+## Observations: 100
+## Variables: 10
+## $ NAME                &lt;chr&gt; &quot;Ashe&quot;, &quot;Alleghany&quot;, &quot;Surry&quot;, &quot;Currituck&quot;,...
+## $ FIPS_CODE           &lt;int&gt; 9, 5, 171, 53, 131, 91, 29, 73, 185, 169, ...
+## $ COUNTY_SEAT         &lt;chr&gt; &quot;Jefferson&quot;, &quot;Sparta&quot;, &quot;Dobson&quot;, &quot;Currituc...
+## $ YEAR                &lt;int&gt; 1799, 1859, 1771, 1668, 1741, 1759, 1777, ...
+## $ ORIGIN              &lt;chr&gt; &quot;Wilkes County&quot;, &quot;Ashe County&quot;, &quot;Rowan Cou...
+## $ ETYMOLOGY           &lt;chr&gt; &quot;Samuel Ashe (1725–1813), a Revolutionary ...
+## $ POPULATION_ESTIMATE &lt;chr&gt; &quot;7004271430000000000&lt;U+2660&gt;27,143&quot;, &quot;70041105200...
+## $ AREA                &lt;chr&gt; &quot;7002427000000000000&lt;U+2660&gt;427 sq mi\n(700311060...
+## $ MAP                 &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA...
+## $ geom                &lt;MULTIPOLYGON [Â°]&gt; MULTIPOLYGON (((-81.47276 3....</code></pre>
+<p>A couple columns appear to have encoding issues (<code>POPULATION_ESTIMATE</code>, <code>AREA</code>, and <code>MAP</code>), but otherwise the data look as I expected them to.</p>
+</div>
+<div id="brainstorming" class="section level3">
+<h3>Brainstorming</h3>
+<p>Now I’ll begin probing the data for plot ideas. The <code>COUNTY_SEAT</code> column catches my attention first (cities!), but I’m then drawn to <code>YEAR</code> which seems to be the year that each county was formed. Visualizations of temporal data are appealing because they naturally lend themselves to narrative creation. The years in this column tell the story of which counties are old and which are new (relatively speaking), as well as the general pattern of county formation</p>
+<p>Let’s have a look at the distribution of the years when the counties were created:</p>
+<pre class="r"><code>nc_ready %&gt;% 
+  st_set_geometry(NULL) %&gt;% 
+  ggplot(data = ., aes(x = YEAR)) +
+  geom_histogram() + 
+  theme_min_blogdown() + # a theme customized to match the aesthetics of this blog
+  theme(axis.title = element_blank())</code></pre>
+<p><img src="/post/2018-04-23-county-count_files/figure-html/counties-by-year-hist-1.svg" width="672" /></p>
+<p>The histogram above suggests a major increase around 1775 and another smaller one near 1850. Increasing the <code>bins</code> parameter might clarify exactly when these counties were added:</p>
+<pre class="r"><code>years &lt;- max(nc_ready$YEAR) - min(nc_ready$YEAR) + 1
+
+nc_ready %&gt;% 
+  st_set_geometry(NULL) %&gt;% 
+  ggplot(data = ., aes(x = YEAR)) +
+  geom_histogram(bins = years) + 
+  scale_y_continuous(breaks = 0:10, minor_breaks = NULL) +
+  theme_min_blogdown() + 
+  theme(axis.title = element_blank()) </code></pre>
+<p><img src="/post/2018-04-23-county-count_files/figure-html/counties-by-year-hist-v2-1.svg" width="672" /></p>
+<p>While not an attractive chart, it clarifies the difference between the spike in counties around 1776 and the small but steady additions seen in the mid-1800s.</p>
+<p>This period of rapid growth seems worth exploring as a topic for a data visualization.<a href="#fn6" class="footnoteRef" id="fnref6"><sup>6</sup></a> While the histogram above clearly illustrates the number of counties added each year, I’m curious if there is a visually-richer way to tell this story.</p>
+<p>I like the linear x-axis because it is a familiar way to representing time. The y-axis, however, feels like an opportunity for improvement. I’ll see what this pattern of county creation looks like when represented as a cumulative count rather than an individual one:</p>
+<pre class="r"><code>nc_year &lt;- nc_ready %&gt;% 
+  st_set_geometry(NULL) %&gt;% 
+  group_by(YEAR) %&gt;% 
+  summarise(NAME = list(NAME) %&gt;% map_chr(str_c, collapse = &quot;, &quot;),
+            COUNT = sum(n())
+            ) %&gt;% 
+  mutate(COUNT_CUMULATIVE = cumsum(COUNT)) %&gt;% 
+  arrange(YEAR)
+
+print(nc_year, n=5)
+## # A tibble: 55 x 4
+##    YEAR NAME                                      COUNT COUNT_CUMULATIVE
+##   &lt;int&gt; &lt;chr&gt;                                     &lt;int&gt;            &lt;int&gt;
+## 1  1668 Currituck, Pasquotank, Perquimans, Chowan     4                4
+## 2  1705 Craven                                        1                5
+## 3  1712 Beaufort, Hyde                                2                7
+## 4  1722 Bertie, Carteret                              2                9
+## 5  1729 Tyrrell, New Hanover                          2               11
+## # ... with 50 more rows
+
+ggplot(data = nc_year, aes(x = YEAR, y = COUNT_CUMULATIVE)) +
+  geom_col() +
+  theme_min_blogdown() +
+  theme(axis.title = element_blank())</code></pre>
+<p><img src="/post/2018-04-23-county-count_files/figure-html/counties-by-year-cumbar-1.svg" width="672" /></p>
+<p>This is a definite improvement! The lines act like a <a href="http://ggplot2.tidyverse.org/reference/geom_rug.html">rug plot</a> and a <a href="http://ggplot2.tidyverse.org/reference/geom_bar.html">bar chart</a> simultaneously, drawing attention to the period of dramatic county creation between 1776 - 1779.</p>
+</div>
+<div id="refining-the-draft" class="section level3">
+<h3>Refining the Draft</h3>
+<p>I’d like to take this draft and run with it, but before I start tweaking the <code>ggplot2</code> parameters I’ll do some quick stetches on paper to figure out what the final product should look like. I’ve found this step helpful because it provides me with a clear end goal which reduces the amount of time spent messing around with minor changes.</p>
+<p>Here’s my sketch of what I’ll try to create:</p>
+<figure class="postit">
+<img src="/post/2018-04-23-county-count_files/nc-combined-01.svg" />
+</figure>
+<p>The idea is to create a combination plot with the county boundaries placed above the county creation history bar chart. I’ll use a label to emphasize the spike in 1779 and distinguish those counties from the rest by giving them a different fill color.</p>
+<p>With this goal in mind, I’ll now implement it using the <a href="http://ggplot2.tidyverse.org/index.html"><code>ggplot2</code></a> and <a href="https://github.com/thomasp85/patchwork"><code>patchwork</code></a> packages. Rather than showing all the iterations I’ll go through, I’ll just list the methods and functions that make it work:</p>
+<ul>
+<li><strong>Polygon Plot:</strong>
+<ul>
+<li>Highlighting the counties created in 1779 could be achieved by mapping a variable to the <code>fill</code> aesthetic, but in this case it’s easier to just add a second <a href="http://ggplot2.tidyverse.org/reference/ggsf.html"><code>geom_sf()</code></a> layer to the plot which only contains the 1779 county geometries.</li>
+<li>The datum lines are hidden using <code>coord_sf(datum = NA)</code><a href="#fn7" class="footnoteRef" id="fnref7"><sup>7</sup></a></li>
+</ul></li>
+<li><strong>Filled Step Plot:</strong>
+<ul>
+<li>I couldn’t find a widely-used name for this type of graphic, so I’ll refer to it as a “filled step plot” for now. There isn’t a single <code>geom_*</code> function to create this visualization, but the effect can be achieved by combining a <code>geom_step</code> layer with a <code>geom_ribbon</code> layer. Note: a lagged version of the data needs to be added to the dataset to create this effect with <code>geom_ribbon</code>.<a href="#fn8" class="footnoteRef" id="fnref8"><sup>8</sup></a></li>
+<li>The label for the year with the most counties is created using <code>group_by(YEAR)</code> and <code>summarize()</code>, followed by an <code>if_else()</code> that replaces all labels <em>other than the year 1779</em> with <code>&quot;&quot;</code>.</li>
+<li>The hollow circle point highlighting the 1779 step is created by taking advantage of R’s point shape options<a href="#fn9" class="footnoteRef" id="fnref9"><sup>9</sup></a> and <code>ggplot</code>’s <code>scale_shape_identity()</code> function.<a href="#fn10" class="footnoteRef" id="fnref10"><sup>10</sup></a></li>
+<li>The y-axis ticks/labels do not match the panel grid. Normally the ticks and labels are show at the major breaks, but in this plot I want the ticks/labels to show only the min and max while the panel grid will have typical set of major and minor breaks. The way I achieve this is pretty hacky: set major breaks at the min and max, hide the grid panel, and add <code>geom_hline()</code> and <code>geom_vline()</code> layers that mimic a grid panel but do not correspond with the major breaks.</li>
+</ul></li>
+<li><strong>Rug plot:</strong>
+<ul>
+<li>While <a href="http://ggplot2.tidyverse.org/reference/geom_rug.html"><code>geom_rug</code></a> exists, I don’t like the way the lines clutter the x-axis, so I create a similar effect using <a href="http://ggplot2.tidyverse.org/reference/geom_bar.html"><code>geom_col</code></a>. To do this I add a column to the data (<code>COUNT_RUG</code>) which has a value of <code>4</code> for every year that a county was added.</li>
+<li>In order to better distinguish the years were many counties were added, I map the <code>COUNT</code> variable to <code>geom_col( alpha = COUNT)</code> and set the scale with <code>scale_alpha(range = c(0.2, 0.8))</code>.<a href="#fn11" class="footnoteRef" id="fnref11"><sup>11</sup></a></li>
+</ul></li>
+<li><strong>Custom themes:</strong>
+<ul>
+<li>In order to match the typography of this blog, I create custom <code>ggplot2</code> themes and install the fonts using the <a href="https://github.com/wch/extrafont"><code>extrafont</code></a> package.</li>
+<li>The polygon plot should have anything except the polygons, so I create a version of <code>theme_void</code> which I call <code>theme_void_blogdown()</code>. The filled step plot needs axes, labels, and ticks, so a verison of <code>theme_minimal</code> is created (<code>theme_min_blogdown()</code>) and used to style this plot.<a href="#fn12" class="footnoteRef" id="fnref12"><sup>12</sup></a></li>
+</ul></li>
+<li><strong>Multi-Plot Layout:</strong>
+<ul>
+<li>The <a href="https://github.com/thomasp85/patchwork"><code>patchwork</code></a> package makes it trivial to combine multiple plots - highly recommended!</li>
+<li>I arrange the plots with <code>plot_layout()</code> and fine-tune the sizes using the <code>heights</code> and <code>widths</code> parameters</li>
+<li>Labels (title, subtitle, caption) are added using <code>plot_annotation()</code></li>
+</ul></li>
+</ul>
+</div>
+<div id="coding-the-plot" class="section level3">
+<h3>Coding the Plot</h3>
+<p>The following code chunks show the steps needed to transform the data and create the composite data graphic. Note: for those interested in running the code on their own computer I recommend copying the entire script from the <a href="https://gist.github.com/tiernanmartin/b27e937281019a64c6d058b6e71272ae">gist</a>.</p>
+<pre class="r"><code> max_year &lt;- nc_ready %&gt;% 
+  count(YEAR, sort = TRUE) %&gt;% 
+  slice(1) %&gt;% 
+  pluck(&quot;YEAR&quot;) 
+
+max_year_header &lt;- str_c(max_year,&quot;:&quot;, sep = &quot;&quot;)
+
+nc_year &lt;- nc_ready %&gt;% 
+  group_by(YEAR) %&gt;% 
+  summarise(COUNTY_SEAT = list(COUNTY_SEAT),
+            NAME = list(NAME),
+            COUNT = sum(n()),
+            COUNT_RUG = as.integer(COUNT &gt; 0) * 4
+            ) %&gt;% 
+  mutate(MAX_LGL = COUNT == as.integer(max(COUNT)),
+         CUMULATIVE = cumsum(COUNT), 
+         LABEL = map_chr(NAME, str_c, collapse = &quot;\n&quot;),
+         LABEL = if_else(MAX_LGL, str_c(max_year_header, LABEL, sep = &quot;\n&quot;), &quot;&quot;),
+         SHAPE = if_else(MAX_LGL, 1, 32 ) %&gt;% as.integer()
+         )   
+# Check out the result:
+print(st_set_geometry(nc_year, NULL),n=3)
+## # A tibble: 55 x 9
+##    YEAR COUNTY_SEAT NAME    COUNT COUNT_RUG MAX_LGL CUMULATIVE LABEL SHAPE
+## * &lt;int&gt; &lt;list&gt;      &lt;list&gt;  &lt;int&gt;     &lt;dbl&gt; &lt;lgl&gt;        &lt;int&gt; &lt;chr&gt; &lt;int&gt;
+## 1  1668 &lt;chr [4]&gt;   &lt;chr [~     4        4. FALSE            4 &quot;&quot;       32
+## 2  1705 &lt;chr [1]&gt;   &lt;chr [~     1        4. FALSE            5 &quot;&quot;       32
+## 3  1712 &lt;chr [2]&gt;   &lt;chr [~     2        4. FALSE            7 &quot;&quot;       32
+## # ... with 52 more rows
+
+county_lag &lt;- nc_year %&gt;% 
+  mutate(CUMULATIVE_LAG = lag(CUMULATIVE)) %&gt;% 
+  gather(SOURCE, CUMULATIVE, CUMULATIVE, CUMULATIVE_LAG) %&gt;% 
+  arrange(YEAR, desc(SOURCE))
+
+# Check out the result:
+county_lag %&gt;% 
+  select(YEAR, SOURCE, CUMULATIVE) %&gt;% 
+  st_set_geometry(NULL) %&gt;% 
+  print(n=6) 
+## # A tibble: 110 x 3
+##    YEAR SOURCE         CUMULATIVE
+## * &lt;int&gt; &lt;chr&gt;               &lt;int&gt;
+## 1  1668 CUMULATIVE_LAG         NA
+## 2  1668 CUMULATIVE              4
+## 3  1705 CUMULATIVE_LAG          4
+## 4  1705 CUMULATIVE              5
+## 5  1712 CUMULATIVE_LAG          5
+## 6  1712 CUMULATIVE              7
+## # ... with 104 more rows</code></pre>
+<pre class="r"><code># Setup
+
+title &lt;- &quot;1779: The Year of Many Counties&quot;
+
+subtitle &lt;- &quot;In the middle of the American Revolutionary War, North Carolina created nine new counties\nin a single year - more than any other year in the state&#39;s history.&quot;
+
+caption &lt;- &quot;Source: Wikipedia &lt;https://en.wikipedia.org/wiki/List_of_counties_in_North_Carolina&gt;&quot;
+
+black_30pct &lt;- adjustcolor( &quot;black&quot;, alpha.f = 0.3)
+
+black_30pct_no_opacity &lt;- rgb(178,178,178, max = 255)
+
+highlight_red &lt;- &quot;#f03838&quot;
+ 
+labels &lt;- c(&quot;First 4 Counties&quot;, &quot;All 100 Counties&quot;)
+
+x_intercepts_major &lt;- seq(1700,1900, by = 50)
+
+x_intercepts_minor &lt;- seq(1675,1875, by = 50)
+
+y_intercepts_major &lt;- seq(50,100, by = 50)
+
+y_intercepts_minor &lt;- seq(25,75, by = 50)
+ 
+# Step plot
+gg_step &lt;- ggplot(data = nc_year, aes(x = YEAR, y = CUMULATIVE, label = LABEL)) + 
+  geom_vline(xintercept = x_intercepts_major, alpha = .25, size = .25) +
+  geom_vline(xintercept = x_intercepts_minor, alpha = .15, size = .15) +
+  geom_hline(yintercept = y_intercepts_major, alpha = .25, size = .25) +
+  geom_hline(yintercept = y_intercepts_minor, alpha = .15, size = .15) + 
+  geom_col(mapping = aes(x = YEAR, y = COUNT_RUG, alpha = COUNT)) + 
+  scale_alpha(range = c(0.2, 0.8)) +
+  geom_step(size = 1) +  
+  geom_ribbon(data = county_lag, aes(ymin = 0, ymax = CUMULATIVE), fill = black_30pct) +
+  scale_shape_identity() +   
+  geom_point(data = nc_year, aes(x = YEAR, y = CUMULATIVE, shape = SHAPE), fill = &quot;white&quot;, size = 3, color = highlight_red) +
+  geom_label_repel(min.segment.length = .1, segment.colour = &quot;black&quot;,point.padding = 1.5,nudge_x = -1, nudge_y = 1, fill = &quot;white&quot;, color = &quot;black&quot;, size = 2.5,label.size = NA, box.padding = 0.5) +
+  theme_min_blogdown() + 
+  scale_y_continuous(breaks = c(4,100), labels = labels) + 
+  theme(legend.position = &quot;none&quot;,
+        panel.grid = element_blank(), 
+        axis.title = element_blank(), 
+        axis.ticks = element_line(size = .5),
+        axis.line = element_line(size = .5)) 
+
+# Map plot
+gg_map &lt;- ggplot() + 
+  geom_sf(data = filter(nc_ready, YEAR != max_year), fill = black_30pct_no_opacity, color = &quot;black&quot;, size = .1) + 
+  geom_sf(data = filter(nc_ready, YEAR == max_year), fill = &quot;black&quot;, color = black_30pct_no_opacity, size = .25) +
+  coord_sf(datum = NA) + 
+  theme_void_blogdown() 
+
+# Combined plot
+gg_plot &lt;-  gg_map + 
+  gg_step + 
+  plot_layout(ncol = 1, heights = c(1,1.15)) + # composing plots like this is made possible by the patchwork pacakge 
+  plot_annotation(title, subtitle, caption,
+                  theme = theme_min_blogdown()
+        )  </code></pre>
+</div>
+<div id="final-result" class="section level3">
+<h3>Final Result</h3>
+<p>After all of that, the plot is finally complete! Let’s take a look:</p>
+<pre class="r"><code>gg_plot</code></pre>
+<div class="figure">
+<img src="/post/2018-04-23-county-count_files/county-count-plot-final.svg" />
+
+</div>
+</div>
+<div id="conclusion" class="section level3">
+<h3>Conclusion</h3>
+<p>As I said at the top, polished plots are a ton of work!</p>
+<p>When it comes to data visualization, you need to be able to take control of nearly every detail of the image. Packages like <code>ggplot2</code> and <code>patchwork</code> are powerful tools, but that doesn’t means it’s <em>easy</em> to create a graphic exactly as you envision it. You have to come up with creative workarounds within the limitations of the tools, and to do that you need to become good at searching the documentation and community resources for the help.</p>
+<p>I hope that this description of my approach serves as a useful reference to other R users and people who create data visualizations.</p>
+</div>
+<div id="diy-feedback" class="section level3">
+<h3>DIY &amp; Feedback</h3>
+<p>If you’d like to reproduce this example on your own computer please download the <a href="https://gist.github.com/tiernanmartin/b27e937281019a64c6d058b6e71272ae">gist</a>.</p>
+<p>Questions, feedback, and suggested improvements are always welcome!</p>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>Check out <code>?st_read</code> for an example with the code needed to load it. Additionally, take a look at the <a href="https://github.com/r-spatial/sf/tree/master/demo"><code>demo/</code></a> directory of the <code>sf</code> package Github repo. There you’ll find <a href="https://github.com/r-spatial/sf/blob/master/demo/nc.R"><code>nc.R</code></a> and in the front-matter there’s a link to the data’s original documentation <a href="https://cran.r-project.org/web/packages/spdep/vignettes/sids.pdf">pdf</a> from the <a href="https://github.com/r-spatial/spdep"><code>spdep</code></a> package<a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p>For more information on reproducible examples, check out the <a href="http://reprex.tidyverse.org/"><code>reprex</code></a> package.<a href="#fnref2">↩</a></p></li>
+<li id="fn3"><p>See the <a href="https://github.com/r-spatial/spdep"><code>spdep</code></a> package vignette <a href="https://cran.r-project.org/web/packages/spdep/vignettes/sids.pdf">pdf</a> for interesting examples of spatial data analysis using the SIDS data.<a href="#fnref3">↩</a></p></li>
+<li id="fn4"><p>The <code>nc</code> data are also available in the <code>sf</code> package’s <a href="https://github.com/r-spatial/sf/tree/master/inst/shape"><code>shape/</code></a>, which is useful if the GeoPackage driver isn’t installed (run <code>st_drivers()</code> to check which drivers are available).<a href="#fnref4">↩</a></p></li>
+<li id="fn5"><p>Two other useful packages for exploring a new dataset are the <a href="https://github.com/ropenscilabs/skimr"><code>skimr</code></a> and <a href="http://visdat.njtierney.com/"><code>visdat</code></a> packages.<a href="#fnref5">↩</a></p></li>
+<li id="fn6"><p>I know that the American Revolutionary War occurred between 1775 and 1783, so the addition of several counties during this time of conflict and transformation is not surprising. This <a href="http://www.usgennet.org/usa/nc/state2/amap/nccf.html">animation</a> shows the actual changes of the boundaries over time, but unfortunately it doesn’t offer any explanation for what caused each change.<a href="#fnref6">↩</a></p></li>
+<li id="fn7"><p>Source: <a href="https://github.com/tidyverse/ggplot2/issues/2071#issuecomment-318744060">“ggplot2 Github issue - Cannot remove panel.grid (graticules) from ggplot + geom_sf() #2071”</a><a href="#fnref7">↩</a></p></li>
+<li id="fn8"><p>Source: <a href="https://stackoverflow.com/a/42210264/5170276">“Stackoverflow - plotting daily rainfall data using geom_step”</a><a href="#fnref8">↩</a></p></li>
+<li id="fn9"><p>Source: <a href="http://sape.inf.usi.ch/quick-reference/ggplot2/shape">“ggplot2 Quick Reference: Mapping with scale_shape_identity”</a><a href="#fnref9">↩</a></p></li>
+<li id="fn10"><p>Source: <a href="http://ggplot2.tidyverse.org/reference/scale_identity.html">“ggplot2 References: Use values without scaling”</a><a href="#fnref10">↩</a></p></li>
+<li id="fn11"><p>Source: <a href="https://ggplot2.tidyverse.org/reference/scale_alpha.html">“ggplot2 References: Alpha transparency scales”</a><a href="#fnref11">↩</a></p></li>
+<li id="fn12"><p>Source: <a href="http://ggplot2.tidyverse.org/reference/theme_get.html">“ggplot2 References: Get, set, and modify the active theme”</a><a href="#fnref12">↩</a></p></li>
+</ol>
+</div>
