@@ -1,0 +1,10 @@
+---
+title: Future test
+author: ''
+date: '2018-05-07'
+slug: future-test
+categories: []
+tags: []
+---
+
+Coming soon!
