@@ -1,0 +1,111 @@
+---
+title: The Map Concatenate Trick
+author: Tiernan
+date: '2018-04-19'
+slug: the-map-concatenate-trick
+draft: false
+categories:
+  - R
+tags:
+  - tips
+---
+
+```{r global_options, include=FALSE}
+options(tidyverse.quiet = TRUE)
+knitr::opts_chunk$set(collapse=TRUE, warning=FALSE, comment='##')
+```
+
+
+Jenny Bryan's ["Row-oriented Workflows" webinar](https://github.com/jennybc/row-oriented-workflows#readme) filled me with the courage to dive head-first into nested tibbles and list-columns. If you haven’t had time to watch it yet, carve out 45 minutes and treat yourself.
+
+The appeal of keeping row-wise workflows arranged within an orderly "data rectangle" (a term [coined by Jenny](https://speakerdeck.com/jennybc/data-rectangling)) was immediately apparent to me, but I ran into a problem: how can objects without a special `map_*` variant be pulled out of list-column without losing their attributes?
+
+This is one of those problems that feels like it has an obvious solution, but once you start poking around you realize it's uglier than you thought. The problem is not specific to list-columns; any time objects are stored in a list special care needs to be taken to convert the list into a vector. Failing to do so runs the risk that important attributes may be inadvertently lost during the conversion. 
+
+I did some sleuthing on Github and found an [issue](https://github.com/tidyverse/purrr/issues/295) or two addressing this topic, so I posted [my approach](https://github.com/tidyverse/purrr/issues/295#issuecomment-382115098) there and got some helpful feedback. This note summarizes the approach that I came up with as well as the ideas and limitations that others contributed in the issue.
+
+### The Problem
+```{r map-concat-note}
+library(gapminder, warn.conflicts = FALSE)
+library(rbenchmark, warn.conflicts = FALSE)
+library(lubridate, warn.conflicts = FALSE) 
+library(tidyverse, warn.conflicts = FALSE)
+
+gap_nested <- gapminder %>% 
+  rename_all(toupper) %>% 
+  transmute()
+
+
+# Create a vector
+
+dttm_range <- as_datetime(seq(as.Date("1999/1/1"), as.Date("1999/12/31"), "months"))  
+
+print(dttm_range)
+
+# Map a function over the vector, 
+# changing each object to a type that doesn't have its own map_* variant
+
+date_list <- map(dttm_range, as.Date)
+
+# Extract the values using the different methods
+
+chr_example <- map_chr(date_list, as.character) # inadequate: loses attributes
+
+reduce_example <- reduce(date_list, c)
+
+invoke_example <- invoke(c, date_list)
+
+docall_example <- do.call("c",date_list)
+
+# View the results, notice that the first just converts them to character
+
+examples <- 
+  tibble(chr_example,
+         reduce_example,
+         invoke_example,
+         docall_example
+  )
+
+print(examples, n = 3)
+
+
+```
+
+### Different Approaches
+
+```{r}
+# Benchmarks 
+benchmarks <- 
+  benchmark(
+    chr_example = as.Date(map_chr(date_list, as.character)),
+    reduce_example = reduce(date_list, c),
+    invoke_example = invoke(c, date_list),
+    docall_example = do.call("c",date_list),
+    replications = 1e4,
+    columns = c(
+      "test", "elapsed", "relative")
+  ) %>% 
+  arrange(relative) %>% 
+  as_tibble() %>% 
+  rename_all(toupper)
+  
+
+print(benchmarks)
+
+```
+
+
+### Limitations
+
+```{r}
+# Limitations
+
+factor_vector <- c(factor("A"), factor("B"))
+
+class(factor_vector) # should be 'factor'
+
+date_dttm_vector <- c(Sys.Date(), Sys.time())
+
+class(date_dttm_vector) # should be 'date' and 'dttm'
+```
+

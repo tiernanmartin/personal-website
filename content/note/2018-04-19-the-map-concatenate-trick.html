@@ -1,0 +1,113 @@
+---
+title: The Map Concatenate Trick
+author: Tiernan
+date: '2018-04-19'
+slug: the-map-concatenate-trick
+draft: false
+categories:
+  - R
+tags:
+  - tips
+---
+
+
+
+<p>Jenny Bryan’s <a href="https://github.com/jennybc/row-oriented-workflows#readme">“Row-oriented Workflows” webinar</a> filled me with the courage to dive head-first into nested tibbles and list-columns. If you haven’t had time to watch it yet, carve out 45 minutes and treat yourself.</p>
+<p>The appeal of keeping row-wise workflows arranged within an orderly “data rectangle” (a term <a href="https://speakerdeck.com/jennybc/data-rectangling">coined by Jenny</a>) was immediately apparent to me, but I ran into a problem: how can objects without a special <code>map_*</code> variant be pulled out of list-column without losing their attributes?</p>
+<p>This is one of those problems that feels like it has an obvious solution, but once you start poking around you realize it’s uglier than you thought. The problem is not specific to list-columns; any time objects are stored in a list special care needs to be taken to convert the list into a vector. Failing to do so runs the risk that important attributes may be inadvertently lost during the conversion.</p>
+<p>I did some sleuthing on Github and found an <a href="https://github.com/tidyverse/purrr/issues/295">issue</a> or two addressing this topic, so I posted <a href="https://github.com/tidyverse/purrr/issues/295#issuecomment-382115098">my approach</a> there and got some helpful feedback. This note summarizes the approach that I came up with as well as the ideas and limitations that others contributed in the issue.</p>
+<div id="the-problem" class="section level3">
+<h3>The Problem</h3>
+<pre class="r"><code>library(gapminder, warn.conflicts = FALSE)
+library(rbenchmark, warn.conflicts = FALSE)
+library(lubridate, warn.conflicts = FALSE) 
+library(tidyverse, warn.conflicts = FALSE)
+
+gap_nested &lt;- gapminder %&gt;% 
+  rename_all(toupper) %&gt;% 
+  transmute()
+
+
+# Create a vector
+
+dttm_range &lt;- as_datetime(seq(as.Date(&quot;1999/1/1&quot;), as.Date(&quot;1999/12/31&quot;), &quot;months&quot;))  
+
+print(dttm_range)
+##  [1] &quot;1999-01-01 UTC&quot; &quot;1999-02-01 UTC&quot; &quot;1999-03-01 UTC&quot; &quot;1999-04-01 UTC&quot;
+##  [5] &quot;1999-05-01 UTC&quot; &quot;1999-06-01 UTC&quot; &quot;1999-07-01 UTC&quot; &quot;1999-08-01 UTC&quot;
+##  [9] &quot;1999-09-01 UTC&quot; &quot;1999-10-01 UTC&quot; &quot;1999-11-01 UTC&quot; &quot;1999-12-01 UTC&quot;
+
+# Map a function over the vector, 
+# changing each object to a type that doesn&#39;t have its own map_* variant
+
+date_list &lt;- map(dttm_range, as.Date)
+
+# Extract the values using the different methods
+
+chr_example &lt;- map_chr(date_list, as.character) # inadequate: loses attributes
+
+reduce_example &lt;- reduce(date_list, c)
+
+invoke_example &lt;- invoke(c, date_list)
+
+docall_example &lt;- do.call(&quot;c&quot;,date_list)
+
+# View the results, notice that the first just converts them to character
+
+examples &lt;- 
+  tibble(chr_example,
+         reduce_example,
+         invoke_example,
+         docall_example
+  )
+
+print(examples, n = 3)
+## # A tibble: 12 x 4
+##   chr_example reduce_example invoke_example docall_example
+##   &lt;chr&gt;       &lt;date&gt;         &lt;date&gt;         &lt;date&gt;        
+## 1 1999-01-01  1999-01-01     1999-01-01     1999-01-01    
+## 2 1999-02-01  1999-02-01     1999-02-01     1999-02-01    
+## 3 1999-03-01  1999-03-01     1999-03-01     1999-03-01    
+## # ... with 9 more rows</code></pre>
+</div>
+<div id="different-approaches" class="section level3">
+<h3>Different Approaches</h3>
+<pre class="r"><code># Benchmarks 
+benchmarks &lt;- 
+  benchmark(
+    chr_example = as.Date(map_chr(date_list, as.character)),
+    reduce_example = reduce(date_list, c),
+    invoke_example = invoke(c, date_list),
+    docall_example = do.call(&quot;c&quot;,date_list),
+    replications = 1e4,
+    columns = c(
+      &quot;test&quot;, &quot;elapsed&quot;, &quot;relative&quot;)
+  ) %&gt;% 
+  arrange(relative) %&gt;% 
+  as_tibble() %&gt;% 
+  rename_all(toupper)
+  
+
+print(benchmarks)
+## # A tibble: 4 x 3
+##   TEST           ELAPSED RELATIVE
+##   &lt;fct&gt;            &lt;dbl&gt;    &lt;dbl&gt;
+## 1 docall_example   0.260     1.00
+## 2 invoke_example   0.350     1.35
+## 3 reduce_example   4.37     16.8 
+## 4 chr_example      9.53     36.7</code></pre>
+</div>
+<div id="limitations" class="section level3">
+<h3>Limitations</h3>
+<pre class="r"><code># Limitations
+
+factor_vector &lt;- c(factor(&quot;A&quot;), factor(&quot;B&quot;))
+
+class(factor_vector) # should be &#39;factor&#39;
+## [1] &quot;integer&quot;
+
+date_dttm_vector &lt;- c(Sys.Date(), Sys.time())
+
+class(date_dttm_vector) # should be &#39;date&#39; and &#39;dttm&#39;
+## [1] &quot;Date&quot;</code></pre>
+</div>
