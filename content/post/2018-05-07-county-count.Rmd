@@ -1,5 +1,6 @@
 ---
 title: County Count
+description: Building a plot from start to finish
 author: Tiernan
 date: '2018-05-07'
 categories:
@@ -8,7 +9,6 @@ tags:
   - data visualization
   - R
   - sf
-description: Building a plot from start to finish
 slug: county-count
 output:
   blogdown::html_page:
@@ -55,7 +55,7 @@ theme_void_blogdown <- function(){
 ```
 
 
-![](/post/2018-04-23-county-count_files/county-count-plot-final.svg)
+![](/post/2018-05-07-county-count_files/county-count-plot-final.svg)
 
 Creating engaging data graphics takes a ton of work!
 
@@ -79,11 +79,11 @@ I want to introduce `nc` for three reasons:
 
 But given my lack of public health expertise I doubt I'll be able to produce an informative graphic with the SIDS data contained in the dataset.^[See the [`spdep`](https://github.com/r-spatial/spdep) package vignette [pdf](https://cran.r-project.org/web/packages/spdep/vignettes/sids.pdf) for interesting examples of spatial data analysis using the SIDS data.] Instead, I'll search for more accessible data (which can be joined to `nc`'s spatial geometries) in my go-to open data portal:
 
-![](/post/2018-04-23-county-count_files/wikipedia-nc-search.gif)
+![](/post/2018-05-07-county-count_files/wikipedia-nc-search.gif)
 
 Prompted by the Wikipedia search bar autocomplete, I find that the ["List of counties in North Carolina"](https://en.wikipedia.org/wiki/List_of_counties_in_North_Carolina) page contains a table with several columns that might be interesting to visualize in a plot:
 
-![](/post/2018-04-23-county-count_files/wiki-table.png)
+![](/post/2018-05-07-county-count_files/wiki-table.png)
 
 With the spatial data from `nc` and the descriptive data from the Wikipedia table, I'm ready to begin the process of creating a data visualization graphic.
 
@@ -222,7 +222,7 @@ I'd like to take this draft and run with it, but before I start tweaking the `gg
 Here's my sketch of what I'll try to create:
  
 <figure class="postit">
-![](/post/2018-04-23-county-count_files/nc-combined-01.svg)
+![](/post/2018-05-07-county-count_files/nc-combined-01.svg)
 </figure>
  
 The idea is to create a combination plot with the county boundaries placed above the county creation history bar chart. I'll use a label to emphasize the spike in 1779 and distinguish those counties from the rest by giving them a different fill color. 
@@ -357,7 +357,7 @@ gg_plot <-  gg_map +
 ```{r county_plot, echo=FALSE, eval = FALSE}
 gg_plot
 
-svglite(here::here("static/post/2018-04-23-county-count_files/county-count-plot-final.svg"), height = 5, width = 7)
+svglite(here::here("static/post/2018-05-07-county-count_files/county-count-plot-final.svg"), height = 5, width = 7)
 gg_plot
 dev.off()
 ```
@@ -371,7 +371,7 @@ gg_plot
 ```
 
 
-![](/post/2018-04-23-county-count_files/county-count-plot-final.svg)
+![](/post/2018-05-07-county-count_files/county-count-plot-final.svg)
 
 
 
