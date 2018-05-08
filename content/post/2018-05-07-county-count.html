@@ -205,7 +205,7 @@ ggplot(data = nc_year, aes(x = YEAR, y = COUNT_CUMULATIVE)) +
   theme_min_blogdown() +
   theme(axis.title = element_blank())</code></pre>
 <p><img src="/post/2018-05-07-county-count_files/figure-html/counties-by-year-cumbar-1.svg" width="672" /></p>
-<p>This is a definite improvement! The lines act like a <a href="http://ggplot2.tidyverse.org/reference/geom_rug.html">rug plot</a> and a <a href="http://ggplot2.tidyverse.org/reference/geom_bar.html">bar chart</a> simultaneously, drawing attention to the period of dramatic county creation between 1776 - 1779.</p>
+<p>This is a definite improvement! The lines act like a <a href="http://ggplot2.tidyverse.org/reference/geom_rug.html">rug plot</a> and a <a href="http://ggplot2.tidyverse.org/reference/geom_bar.html">bar chart</a> at the same time, drawing attention to the period of dramatic county creation between 1776 - 1779.</p>
 </div>
 <div id="refining-the-draft" class="section level3">
 <h3>Refining the Draft</h3>
@@ -249,8 +249,8 @@ ggplot(data = nc_year, aes(x = YEAR, y = COUNT_CUMULATIVE)) +
 </ul></li>
 </ul>
 </div>
-<div id="coding-the-plot" class="section level3">
-<h3>Coding the Plot</h3>
+<div id="banging-out-the-code" class="section level3">
+<h3>Banging Out the Code</h3>
 <p>The following code chunks show the steps needed to transform the data and create the composite data graphic. Note: for those interested in running the code on their own computer I recommend copying the entire script from the <a href="https://gist.github.com/tiernanmartin/b27e937281019a64c6d058b6e71272ae">gist</a>.</p>
 <pre class="r"><code> max_year &lt;- nc_ready %&gt;% 
   count(YEAR, sort = TRUE) %&gt;% 
@@ -402,7 +402,7 @@ gg_plot &lt;-  gg_map +
 <li id="fn5"><p>Two other useful packages for exploring a new dataset are the <a href="https://github.com/ropenscilabs/skimr"><code>skimr</code></a> and <a href="http://visdat.njtierney.com/"><code>visdat</code></a> packages.<a href="#fnref5">↩</a></p></li>
 <li id="fn6"><p>I know that the American Revolutionary War occurred between 1775 and 1783, so the addition of several counties during this time of conflict and transformation is not surprising. This <a href="http://www.usgennet.org/usa/nc/state2/amap/nccf.html">animation</a> shows the actual changes of the boundaries over time, but unfortunately it doesn’t offer any explanation for what caused each change.<a href="#fnref6">↩</a></p></li>
 <li id="fn7"><p>Source: <a href="https://github.com/tidyverse/ggplot2/issues/2071#issuecomment-318744060">“ggplot2 Github issue - Cannot remove panel.grid (graticules) from ggplot + geom_sf() #2071”</a><a href="#fnref7">↩</a></p></li>
-<li id="fn8"><p>Here’s the plot that served as an inspiration for this example: <a href="https://realestatemvps.files.wordpress.com/2010/04/housing-projection-robert-shiller.jpg" class="uri">https://realestatemvps.files.wordpress.com/2010/04/housing-projection-robert-shiller.jpg</a><a href="#fnref8">↩</a></p></li>
+<li id="fn8"><p>Here’s the plot that served as an inspiration for this example: <a href="https://realestatemvps.files.wordpress.com/2010/04/housing-projection-robert-shiller.jpg">A History of Home Values by Robert Shiller</a><a href="#fnref8">↩</a></p></li>
 <li id="fn9"><p>Source: <a href="http://sape.inf.usi.ch/quick-reference/ggplot2/shape">“ggplot2 Quick Reference: Mapping with scale_shape_identity”</a><a href="#fnref9">↩</a></p></li>
 <li id="fn10"><p>Source: <a href="http://ggplot2.tidyverse.org/reference/scale_identity.html">“ggplot2 References: Use values without scaling”</a><a href="#fnref10">↩</a></p></li>
 <li id="fn11"><p>A simple example of a “filled step plot” can be found <a href="https://stackoverflow.com/a/42210264/5170276">here</a> and a more advanced example can be found <a href="https://gist.github.com/tiernanmartin/fc7d21599b2752624ea102fe163c71e0">here</a>.<a href="#fnref11">↩</a></p></li>
