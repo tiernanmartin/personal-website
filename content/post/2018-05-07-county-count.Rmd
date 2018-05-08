@@ -31,6 +31,17 @@ library(here)
 loadfonts(device = "postscript", quiet = TRUE)
 loadfonts(device = "win", quiet = TRUE)
 
+fonts <- list(
+  sans = list(
+    plain = "C:\\Windows\\Fonts\\WorkSans-Regular.ttf",
+    bold = "C:\\Windows\\Fonts\\WorkSans-Medium.ttf"
+  ),
+  serif = list(plain = "C:\\Windows\\Fonts\\Taviraj-Regular.ttf",
+               bold = "C:\\Windows\\Fonts\\Taviraj-Medium.ttf")
+)
+
+
+
 knitr::opts_chunk$set(warning=FALSE, message=FALSE)
 
 theme_min_blogdown <- function(){
@@ -373,7 +384,7 @@ gg_plot <-  gg_map +
 ```{r county_plot, echo=FALSE, eval = FALSE}
 gg_plot
 
-svglite(here::here("static/post/2018-05-07-county-count_files/county-count-plot-final.svg"), height = 5, width = 7)
+svglite(here::here("static/post/2018-05-07-county-count_files/county-count-plot-final.svg"), height = 5, width = 7, user_fonts = fonts)
 gg_plot
 dev.off()
 ```
