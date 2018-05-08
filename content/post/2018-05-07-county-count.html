@@ -330,7 +330,7 @@ gg_step &lt;- ggplot(data = nc_year, aes(x = YEAR, y = CUMULATIVE, label = LABEL
   geom_step(size = 1) +   
   scale_shape_identity() +   
   geom_point(data = nc_year, aes(x = YEAR, y = CUMULATIVE, shape = SHAPE), fill = &quot;white&quot;, size = 3, color = highlight_red) +
-  geom_label_repel(min.segment.length = .1, segment.colour = &quot;black&quot;,point.padding = 1.5,nudge_x = -1, nudge_y = 1, fill = &quot;white&quot;, color = &quot;black&quot;, size = 2.5,label.size = NA, box.padding = 0.15) +
+  geom_label_repel(min.segment.length = .1, segment.colour = &quot;black&quot;,point.padding = 1.5,nudge_x = -1, nudge_y = 1, fill = &quot;white&quot;, color = &quot;black&quot;, size = 2.5,label.size = NA, box.padding = 0.15, family = &quot;Work Sans&quot;, fontface = &quot;plain&quot;, angle = 0, lineheight = 1.15) +
   theme_min_blogdown() + 
   scale_y_continuous(breaks = c(4,100), labels = labels) + 
   theme(legend.position = &quot;none&quot;,
@@ -343,7 +343,9 @@ gg_step &lt;- ggplot(data = nc_year, aes(x = YEAR, y = CUMULATIVE, label = LABEL
 
 gg_label &lt;- ggplot(data = war, aes(x = MID, y = 0, label = WAR_NAME)) +
   scale_x_continuous(limits = c(year_limits_min, year_limits_max)) +
-  geom_text(size = 2.5,nudge_x = 0,nudge_y = 0) +
+  geom_text(size = 2.5,nudge_x = 0,nudge_y = 0, family = &quot;Work Sans&quot;, fontface = &quot;plain&quot;,
+                                      color = &quot;black&quot;,
+                                      hjust = 0.5, vjust = 0.5, angle = 0, lineheight = 0.9) +
   theme_void() 
 
 

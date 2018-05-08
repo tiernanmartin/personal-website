@@ -31,7 +31,12 @@ library(here)
 loadfonts(device = "postscript", quiet = TRUE)
 loadfonts(device = "win", quiet = TRUE)
 
-fonts <- list(
+system_fonts <- list(
+  sans = "Work Sans",
+  serif = "Taviraj" 
+)
+
+user_fonts <- list(
   sans = list(
     plain = "C:\\Windows\\Fonts\\WorkSans-Regular.ttf",
     bold = "C:\\Windows\\Fonts\\WorkSans-Medium.ttf"
@@ -47,6 +52,10 @@ knitr::opts_chunk$set(warning=FALSE, message=FALSE)
 theme_min_blogdown <- function(){
   theme_minimal(base_size=12, base_family="Work Sans") %+replace% 
     theme(
+      text = element_text(family = "Work Sans", face = "plain",
+                                      color = "black", size = 12,
+                                      hjust = 0, vjust = 0.5, angle = 0, lineheight = 0.9,
+                                      margin = margin(), debug = FALSE), 
       plot.title = element_text(family = "Work Sans Medium", size = 14, face = "bold", hjust = 0),
       plot.caption = element_text(family = "Work Sans Light", size = 10, hjust = 1, vjust = 0)
     )
@@ -55,6 +64,10 @@ theme_min_blogdown <- function(){
 theme_void_blogdown <- function(){
   theme_void(base_size=14, base_family="Work Sans") %+replace% 
     theme(
+      text = element_text(family = "Work Sans", face = "plain",
+                                      color = "black", size = 12,
+                                      hjust = 0, vjust = 0.5, angle = 0, lineheight = 0.9,
+                                      margin = margin(), debug = FALSE), 
       plot.title = element_text(family = "Work Sans Medium", size = 14, face = "bold", hjust = 0),
       plot.caption = element_text(family = "Work Sans Light", size = 10, hjust = 1, vjust = 0)
     )
@@ -345,7 +358,7 @@ gg_step <- ggplot(data = nc_year, aes(x = YEAR, y = CUMULATIVE, label = LABEL)) 
   geom_step(size = 1) +   
   scale_shape_identity() +   
   geom_point(data = nc_year, aes(x = YEAR, y = CUMULATIVE, shape = SHAPE), fill = "white", size = 3, color = highlight_red) +
-  geom_label_repel(min.segment.length = .1, segment.colour = "black",point.padding = 1.5,nudge_x = -1, nudge_y = 1, fill = "white", color = "black", size = 2.5,label.size = NA, box.padding = 0.15) +
+  geom_label_repel(min.segment.length = .1, segment.colour = "black",point.padding = 1.5,nudge_x = -1, nudge_y = 1, fill = "white", color = "black", size = 2.5,label.size = NA, box.padding = 0.15, family = "Work Sans", fontface = "plain", angle = 0, lineheight = 1.15) +
   theme_min_blogdown() + 
   scale_y_continuous(breaks = c(4,100), labels = labels) + 
   theme(legend.position = "none",
@@ -358,7 +371,9 @@ gg_step <- ggplot(data = nc_year, aes(x = YEAR, y = CUMULATIVE, label = LABEL)) 
 
 gg_label <- ggplot(data = war, aes(x = MID, y = 0, label = WAR_NAME)) +
   scale_x_continuous(limits = c(year_limits_min, year_limits_max)) +
-  geom_text(size = 2.5,nudge_x = 0,nudge_y = 0) +
+  geom_text(size = 2.5,nudge_x = 0,nudge_y = 0, family = "Work Sans", fontface = "plain",
+                                      color = "black",
+                                      hjust = 0.5, vjust = 0.5, angle = 0, lineheight = 0.9) +
   theme_void() 
 
 
@@ -382,9 +397,7 @@ gg_plot <-  gg_map +
 
 
 ```{r county_plot, echo=FALSE, eval = FALSE}
-gg_plot
-
-svglite(here::here("static/post/2018-05-07-county-count_files/county-count-plot-final.svg"), height = 5, width = 7, user_fonts = fonts)
+svglite(here::here("static/post/2018-05-07-county-count_files/county-count-plot-final.svg"), height = 5, width = 7, user_fonts = user_fonts)
 gg_plot
 dev.off()
 ```
