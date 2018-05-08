@@ -50,7 +50,9 @@ output:
 <div id="loading-the-data" class="section level3">
 <h3>Loading the data</h3>
 <p>We’ll use functions from several packages during this post, so the first step is to load the packages:</p>
-<pre class="r"><code>library(rvest)
+<pre class="r"><code>library(ggrepel)
+library(patchwork)  
+library(rvest)
 library(janitor)  
 library(sf)
 library(tidyverse) </code></pre>
@@ -210,9 +212,9 @@ ggplot(data = nc_year, aes(x = YEAR, y = COUNT_CUMULATIVE)) +
 <p>I’d like to take this draft and run with it, but before I start tweaking the <code>ggplot2</code> parameters I’ll do some quick stetches on paper to figure out what the final product should look like. I’ve found this step helpful because it provides me with a clear end goal which reduces the amount of time spent messing around with minor changes.</p>
 <p>Here’s my sketch of what I’ll try to create:</p>
 <figure class="postit">
-<img src="/post/2018-05-07-county-count_files/nc-combined-01.svg" />
+<img src="/post/2018-05-07-county-count_files/nc-combined-plot-01.svg" />
 </figure>
-<p>The idea is to create a combination plot with the county boundaries placed above the county creation history bar chart. I’ll use a label to emphasize the spike in 1779 and distinguish those counties from the rest by giving them a different fill color.</p>
+<p>The idea is to create a combination plot with the county boundaries placed above the county creation history bar chart. I’ll use a label to emphasize the spike in 1779 and distinguish those counties from the rest by giving them a different <code>fill</code> color. The American Revolutionary War will be illustrated with a simple gray rectangle behind the county data.</p>
 <p>With this goal in mind, I’ll now implement it using the <a href="http://ggplot2.tidyverse.org/index.html"><code>ggplot2</code></a> and <a href="https://github.com/thomasp85/patchwork"><code>patchwork</code></a> packages. Rather than showing all the iterations I’ll go through, I’ll just list the methods and functions that make it work:</p>
 <ul>
 <li><strong>Polygon Plot:</strong>
@@ -220,22 +222,24 @@ ggplot(data = nc_year, aes(x = YEAR, y = COUNT_CUMULATIVE)) +
 <li>Highlighting the counties created in 1779 could be achieved by mapping a variable to the <code>fill</code> aesthetic, but in this case it’s easier to just add a second <a href="http://ggplot2.tidyverse.org/reference/ggsf.html"><code>geom_sf()</code></a> layer to the plot which only contains the 1779 county geometries.</li>
 <li>The datum lines are hidden using <code>coord_sf(datum = NA)</code><a href="#fn7" class="footnoteRef" id="fnref7"><sup>7</sup></a></li>
 </ul></li>
-<li><strong>Filled Step Plot:</strong>
+<li><strong>Step Plot:</strong>
 <ul>
-<li>I couldn’t find a widely-used name for this type of graphic, so I’ll refer to it as a “filled step plot” for now. There isn’t a single <code>geom_*</code> function to create this visualization, but the effect can be achieved by combining a <code>geom_step</code> layer with a <code>geom_ribbon</code> layer. Note: a lagged version of the data needs to be added to the dataset to create this effect with <code>geom_ribbon</code>.<a href="#fn8" class="footnoteRef" id="fnref8"><sup>8</sup></a></li>
+<li>Augmenting a timeseries plot with a “callout” bar is a common tactic used by economic and financial data analysts.<a href="#fn8" class="footnoteRef" id="fnref8"><sup>8</sup></a> <code>ggplot</code>’s layering system makes it relatively straightforward to create this type plot by combining <code>geom_step()</code> and <code>geom_col()</code>.</li>
 <li>The label for the year with the most counties is created using <code>group_by(YEAR)</code> and <code>summarize()</code>, followed by an <code>if_else()</code> that replaces all labels <em>other than the year 1779</em> with <code>&quot;&quot;</code>.</li>
 <li>The hollow circle point highlighting the 1779 step is created by taking advantage of R’s point shape options<a href="#fn9" class="footnoteRef" id="fnref9"><sup>9</sup></a> and <code>ggplot</code>’s <code>scale_shape_identity()</code> function.<a href="#fn10" class="footnoteRef" id="fnref10"><sup>10</sup></a></li>
+<li>The label for the Revolutionary War is created by adding an additional plot that only contains the <code>geom_text()</code> layer and is combined with the rest of the step plot using the <code>patchwork</code> package. This is a little heavy-handed but it gets the job done.</li>
 <li>The y-axis ticks/labels do not match the panel grid. Normally the ticks and labels are show at the major breaks, but in this plot I want the ticks/labels to show only the min and max while the panel grid will have typical set of major and minor breaks. The way I achieve this is pretty hacky: set major breaks at the min and max, hide the grid panel, and add <code>geom_hline()</code> and <code>geom_vline()</code> layers that mimic a grid panel but do not correspond with the major breaks.</li>
+<li>I experimented with adding a <code>fill</code> color to the area beneath the <code>geom_step()</code> line but decided against it because it didn’t add any information.<a href="#fn11" class="footnoteRef" id="fnref11"><sup>11</sup></a></li>
 </ul></li>
 <li><strong>Rug plot:</strong>
 <ul>
 <li>While <a href="http://ggplot2.tidyverse.org/reference/geom_rug.html"><code>geom_rug</code></a> exists, I don’t like the way the lines clutter the x-axis, so I create a similar effect using <a href="http://ggplot2.tidyverse.org/reference/geom_bar.html"><code>geom_col</code></a>. To do this I add a column to the data (<code>COUNT_RUG</code>) which has a value of <code>4</code> for every year that a county was added.</li>
-<li>In order to better distinguish the years were many counties were added, I map the <code>COUNT</code> variable to <code>geom_col( alpha = COUNT)</code> and set the scale with <code>scale_alpha(range = c(0.2, 0.8))</code>.<a href="#fn11" class="footnoteRef" id="fnref11"><sup>11</sup></a></li>
+<li>In order to better distinguish the years were many counties were added, I map the <code>COUNT</code> variable to <code>geom_col( alpha = COUNT)</code> and set the scale with <code>scale_alpha(range = c(0.2, 0.8))</code>.<a href="#fn12" class="footnoteRef" id="fnref12"><sup>12</sup></a></li>
 </ul></li>
 <li><strong>Custom themes:</strong>
 <ul>
 <li>In order to match the typography of this blog, I create custom <code>ggplot2</code> themes and install the fonts using the <a href="https://github.com/wch/extrafont"><code>extrafont</code></a> package.</li>
-<li>The polygon plot should have anything except the polygons, so I create a version of <code>theme_void</code> which I call <code>theme_void_blogdown()</code>. The filled step plot needs axes, labels, and ticks, so a verison of <code>theme_minimal</code> is created (<code>theme_min_blogdown()</code>) and used to style this plot.<a href="#fn12" class="footnoteRef" id="fnref12"><sup>12</sup></a></li>
+<li>The polygon plot should have anything except the polygons, so I create a version of <code>theme_void</code> which I call <code>theme_void_blogdown()</code>. The filled step plot needs axes, labels, and ticks, so a verison of <code>theme_minimal</code> is created (<code>theme_min_blogdown()</code>) and used to style this plot.<a href="#fn13" class="footnoteRef" id="fnref13"><sup>13</sup></a></li>
 </ul></li>
 <li><strong>Multi-Plot Layout:</strong>
 <ul>
@@ -269,35 +273,20 @@ nc_year &lt;- nc_ready %&gt;%
          SHAPE = if_else(MAX_LGL, 1, 32 ) %&gt;% as.integer()
          )   
 # Check out the result:
-print(st_set_geometry(nc_year, NULL),n=3)
+print(st_set_geometry(nc_year, NULL),n=3) 
 ## # A tibble: 55 x 9
 ##    YEAR COUNTY_SEAT NAME    COUNT COUNT_RUG MAX_LGL CUMULATIVE LABEL SHAPE
 ## * &lt;int&gt; &lt;list&gt;      &lt;list&gt;  &lt;int&gt;     &lt;dbl&gt; &lt;lgl&gt;        &lt;int&gt; &lt;chr&gt; &lt;int&gt;
 ## 1  1668 &lt;chr [4]&gt;   &lt;chr [~     4        4. FALSE            4 &quot;&quot;       32
 ## 2  1705 &lt;chr [1]&gt;   &lt;chr [~     1        4. FALSE            5 &quot;&quot;       32
 ## 3  1712 &lt;chr [2]&gt;   &lt;chr [~     2        4. FALSE            7 &quot;&quot;       32
-## # ... with 52 more rows
-
-county_lag &lt;- nc_year %&gt;% 
-  mutate(CUMULATIVE_LAG = lag(CUMULATIVE)) %&gt;% 
-  gather(SOURCE, CUMULATIVE, CUMULATIVE, CUMULATIVE_LAG) %&gt;% 
-  arrange(YEAR, desc(SOURCE))
-
-# Check out the result:
-county_lag %&gt;% 
-  select(YEAR, SOURCE, CUMULATIVE) %&gt;% 
-  st_set_geometry(NULL) %&gt;% 
-  print(n=6) 
-## # A tibble: 110 x 3
-##    YEAR SOURCE         CUMULATIVE
-## * &lt;int&gt; &lt;chr&gt;               &lt;int&gt;
-## 1  1668 CUMULATIVE_LAG         NA
-## 2  1668 CUMULATIVE              4
-## 3  1705 CUMULATIVE_LAG          4
-## 4  1705 CUMULATIVE              5
-## 5  1712 CUMULATIVE_LAG          5
-## 6  1712 CUMULATIVE              7
-## # ... with 104 more rows</code></pre>
+## # ... with 52 more rows</code></pre>
+<pre class="r"><code>war &lt;- tibble(
+  WAR_NAME = &quot;Revolutionary War&quot;,
+  START = as.integer(1775),
+  MID = as.integer(1779),
+  END = as.integer(1783)
+)</code></pre>
 <pre class="r"><code># Setup
 
 title &lt;- &quot;1779: The Year of Many Counties&quot;
@@ -306,9 +295,9 @@ subtitle &lt;- &quot;In the middle of the American Revolutionary War, North Caro
 
 caption &lt;- &quot;Source: Wikipedia &lt;https://en.wikipedia.org/wiki/List_of_counties_in_North_Carolina&gt;&quot;
 
-black_30pct &lt;- adjustcolor( &quot;black&quot;, alpha.f = 0.3)
+black_15pct &lt;- adjustcolor( &quot;black&quot;, alpha.f = 0.15)
 
-black_30pct_no_opacity &lt;- rgb(178,178,178, max = 255)
+black_15pct_no_opacity &lt;- rgb(218,218,218, max = 255)
 
 highlight_red &lt;- &quot;#f03838&quot;
  
@@ -322,6 +311,10 @@ y_intercepts_major &lt;- seq(50,100, by = 50)
 
 y_intercepts_minor &lt;- seq(25,75, by = 50)
  
+year_limits_min &lt;- min(nc_year$YEAR)
+
+year_limits_max &lt;- max(nc_year$YEAR)
+
 # Step plot
 gg_step &lt;- ggplot(data = nc_year, aes(x = YEAR, y = CUMULATIVE, label = LABEL)) + 
   geom_vline(xintercept = x_intercepts_major, alpha = .25, size = .25) +
@@ -330,11 +323,14 @@ gg_step &lt;- ggplot(data = nc_year, aes(x = YEAR, y = CUMULATIVE, label = LABEL
   geom_hline(yintercept = y_intercepts_minor, alpha = .15, size = .15) + 
   geom_col(mapping = aes(x = YEAR, y = COUNT_RUG, alpha = COUNT)) + 
   scale_alpha(range = c(0.2, 0.8)) +
-  geom_step(size = 1) +  
-  geom_ribbon(data = county_lag, aes(ymin = 0, ymax = CUMULATIVE), fill = black_30pct) +
+  geom_rect(inherit.aes = FALSE,
+                    data = war, 
+                    mapping = aes(xmin = START, xmax = END, ymin = 0, ymax = Inf), 
+                    fill = black_15pct) + 
+  geom_step(size = 1) +   
   scale_shape_identity() +   
   geom_point(data = nc_year, aes(x = YEAR, y = CUMULATIVE, shape = SHAPE), fill = &quot;white&quot;, size = 3, color = highlight_red) +
-  geom_label_repel(min.segment.length = .1, segment.colour = &quot;black&quot;,point.padding = 1.5,nudge_x = -1, nudge_y = 1, fill = &quot;white&quot;, color = &quot;black&quot;, size = 2.5,label.size = NA, box.padding = 0.5) +
+  geom_label_repel(min.segment.length = .1, segment.colour = &quot;black&quot;,point.padding = 1.5,nudge_x = -1, nudge_y = 1, fill = &quot;white&quot;, color = &quot;black&quot;, size = 2.5,label.size = NA, box.padding = 0.15) +
   theme_min_blogdown() + 
   scale_y_continuous(breaks = c(4,100), labels = labels) + 
   theme(legend.position = &quot;none&quot;,
@@ -343,16 +339,25 @@ gg_step &lt;- ggplot(data = nc_year, aes(x = YEAR, y = CUMULATIVE, label = LABEL
         axis.ticks = element_line(size = .5),
         axis.line = element_line(size = .5)) 
 
+# Step plot war label
+
+gg_label &lt;- ggplot(data = war, aes(x = MID, y = 0, label = WAR_NAME)) +
+  scale_x_continuous(limits = c(year_limits_min, year_limits_max)) +
+  geom_text(size = 2.5,nudge_x = 0,nudge_y = 0) +
+  theme_void() 
+
+
+
 # Map plot
 gg_map &lt;- ggplot() + 
-  geom_sf(data = filter(nc_ready, YEAR != max_year), fill = black_30pct_no_opacity, color = &quot;black&quot;, size = .1) + 
-  geom_sf(data = filter(nc_ready, YEAR == max_year), fill = &quot;black&quot;, color = black_30pct_no_opacity, size = .25) +
+  geom_sf(data = filter(nc_ready, YEAR != max_year), fill = black_15pct_no_opacity, color = &quot;black&quot;, size = .1) + 
+  geom_sf(data = filter(nc_ready, YEAR == max_year), fill = &quot;black&quot;, color = black_15pct_no_opacity, size = .25) +
   coord_sf(datum = NA) + 
   theme_void_blogdown() 
 
 # Combined plot
 gg_plot &lt;-  gg_map + 
-  gg_step + 
+  {gg_label + gg_step + plot_layout(ncol = 1, heights = c(1,20))} + 
   plot_layout(ncol = 1, heights = c(1,1.15)) + # composing plots like this is made possible by the patchwork pacakge 
   plot_annotation(title, subtitle, caption,
                   theme = theme_min_blogdown()
@@ -378,6 +383,15 @@ gg_plot &lt;-  gg_map +
 <p>If you’d like to reproduce this example on your own computer please download the <a href="https://gist.github.com/tiernanmartin/b27e937281019a64c6d058b6e71272ae">gist</a>.</p>
 <p>Questions, feedback, and suggested improvements are always welcome!</p>
 </div>
+<div id="resources" class="section level3">
+<h3>Resources</h3>
+<ul>
+<li><a href="http://serialmentor.com/dataviz/">Data Visualization</a> by <a href="https://github.com/clauswilke">Claus O. Wilke</a></li>
+<li><a href="http://ggplot2.tidyverse.org/reference/index.html"><code>ggplot2</code> References</a></li>
+<li><a href="https://github.com/thomasp85/patchwork#patchwork-"><code>patchwork</code></a> Github repo README</li>
+<li><a href="https://github.com/slowkow/ggrepel#ggrepel-"><code>ggrepel</code></a> Github repo README</li>
+</ul>
+</div>
 <div class="footnotes">
 <hr />
 <ol>
@@ -388,10 +402,11 @@ gg_plot &lt;-  gg_map +
 <li id="fn5"><p>Two other useful packages for exploring a new dataset are the <a href="https://github.com/ropenscilabs/skimr"><code>skimr</code></a> and <a href="http://visdat.njtierney.com/"><code>visdat</code></a> packages.<a href="#fnref5">↩</a></p></li>
 <li id="fn6"><p>I know that the American Revolutionary War occurred between 1775 and 1783, so the addition of several counties during this time of conflict and transformation is not surprising. This <a href="http://www.usgennet.org/usa/nc/state2/amap/nccf.html">animation</a> shows the actual changes of the boundaries over time, but unfortunately it doesn’t offer any explanation for what caused each change.<a href="#fnref6">↩</a></p></li>
 <li id="fn7"><p>Source: <a href="https://github.com/tidyverse/ggplot2/issues/2071#issuecomment-318744060">“ggplot2 Github issue - Cannot remove panel.grid (graticules) from ggplot + geom_sf() #2071”</a><a href="#fnref7">↩</a></p></li>
-<li id="fn8"><p>Source: <a href="https://stackoverflow.com/a/42210264/5170276">“Stackoverflow - plotting daily rainfall data using geom_step”</a><a href="#fnref8">↩</a></p></li>
+<li id="fn8"><p>Here’s the plot that served as an inspiration for this example: <a href="https://realestatemvps.files.wordpress.com/2010/04/housing-projection-robert-shiller.jpg" class="uri">https://realestatemvps.files.wordpress.com/2010/04/housing-projection-robert-shiller.jpg</a><a href="#fnref8">↩</a></p></li>
 <li id="fn9"><p>Source: <a href="http://sape.inf.usi.ch/quick-reference/ggplot2/shape">“ggplot2 Quick Reference: Mapping with scale_shape_identity”</a><a href="#fnref9">↩</a></p></li>
 <li id="fn10"><p>Source: <a href="http://ggplot2.tidyverse.org/reference/scale_identity.html">“ggplot2 References: Use values without scaling”</a><a href="#fnref10">↩</a></p></li>
-<li id="fn11"><p>Source: <a href="https://ggplot2.tidyverse.org/reference/scale_alpha.html">“ggplot2 References: Alpha transparency scales”</a><a href="#fnref11">↩</a></p></li>
-<li id="fn12"><p>Source: <a href="http://ggplot2.tidyverse.org/reference/theme_get.html">“ggplot2 References: Get, set, and modify the active theme”</a><a href="#fnref12">↩</a></p></li>
+<li id="fn11"><p>A simple example of a “filled step plot” can be found <a href="https://stackoverflow.com/a/42210264/5170276">here</a> and a more advanced example can be found <a href="https://gist.github.com/tiernanmartin/fc7d21599b2752624ea102fe163c71e0">here</a>.<a href="#fnref11">↩</a></p></li>
+<li id="fn12"><p>Source: <a href="https://ggplot2.tidyverse.org/reference/scale_alpha.html">“ggplot2 References: Alpha transparency scales”</a><a href="#fnref12">↩</a></p></li>
+<li id="fn13"><p>Source: <a href="http://ggplot2.tidyverse.org/reference/theme_get.html">“ggplot2 References: Get, set, and modify the active theme”</a><a href="#fnref13">↩</a></p></li>
 </ol>
 </div>
