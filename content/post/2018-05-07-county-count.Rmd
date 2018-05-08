@@ -211,7 +211,7 @@ ggplot(data = nc_year, aes(x = YEAR, y = COUNT_CUMULATIVE)) +
 
 ```
 
-This is a definite improvement! The lines act like a [rug plot](http://ggplot2.tidyverse.org/reference/geom_rug.html) and a [bar chart](http://ggplot2.tidyverse.org/reference/geom_bar.html) simultaneously, drawing attention to the period of dramatic county creation between 1776 - 1779.
+This is a definite improvement! The lines act like a [rug plot](http://ggplot2.tidyverse.org/reference/geom_rug.html) and a [bar chart](http://ggplot2.tidyverse.org/reference/geom_bar.html) at the same time, drawing attention to the period of dramatic county creation between 1776 - 1779.
 
 ### Refining the Draft
 
@@ -248,7 +248,7 @@ With this goal in mind, I'll now implement it using the [`ggplot2`](http://ggplo
     - I arrange the plots with `plot_layout()` and fine-tune the sizes using the `heights` and `widths` parameters
     - Labels (title, subtitle, caption) are added using `plot_annotation()`
  
-### Coding the Plot
+### Banging Out the Code
 
 The following code chunks show the steps needed to transform the data and create the composite data graphic. Note: for those interested in running the code on their own computer I recommend copying the entire script from the [gist](https://gist.github.com/tiernanmartin/b27e937281019a64c6d058b6e71272ae).
 
