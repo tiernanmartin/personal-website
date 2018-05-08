@@ -1,10 +1,4 @@
 base
-datasets
-utils
-grDevices
-graphics
-stats
-methods
 svglite
 extrafont
 ggplot2
