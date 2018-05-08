@@ -18,8 +18,8 @@ Paginate = 3
 [Params]
     intro = true
     headline = "Mutate(City)"
-    description = "Data Analytics Applied to the Built Environment"
-    twitter = "https://twitter.com/maynardandking"
+    description = "Data Analytics Applied to the Built Environment"  
+    twitter = "https://twitter.com/maynardandking"  
     github = "https://github.com/tiernanmartin" 
     opengraph = true
     shareTwitter = true

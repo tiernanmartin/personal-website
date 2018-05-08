@@ -19,6 +19,15 @@
         {{ if .RSSLink }}
             <link href="{{ .RSSLink }}" rel="alternate" type="application/rss+xml">
         {{ end }}
+        {{ if eq .URL "/" }}
+        <title>{{ .Site.Title }}</title>
+        <meta property="og:title" content="{{ .Site.Title }}">
+        <meta property="og:type" content="website">
+        <meta property="description" content="{{ .Site.Params.description }}">
+        <meta property="og:description" content="{{ .Site.Params.description }}">
+        <meta name="twitter:card" content="summary">
+        <meta name="twitter:image" content="http://mutate-city.rbind.io/images/mutate-city-logo-01.svg" >
+        {{ end }}        
         {{ partial "extra-in-head.html" . }}
     </head>
     <body>
