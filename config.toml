@@ -4,13 +4,13 @@ theme = "ghostwriter"
 languageCode = "en-us"
 copyright = "Tiernan Martin"
 disqusShortname = "mutate-city"
-googleAnalytics = "XXX"
+googleAnalytics = "UA-118875224-1"
 ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
 Paginate = 3
 
 [Author]
     name = "Tiernan Martin"
-    profile = "https://google.com/+XXX"
+    profile = "https://twitter.com/maynardandking"
 
 [Taxonomies]
     tag = "tags"
