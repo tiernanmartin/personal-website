@@ -159,7 +159,7 @@ figure.postit{
 .post-list-date { font-size: 150%; font-weight: 600; text-align: right; float: right; width: 15%;}
 .post-stub { border-bottom: 1px dotted #303030; margin: 0; position: relative; }
 .post-stub:first-child { padding-top: 0; }
-.post-stub a { -webkit-transition: all .2s ease-in-out; -moz-transition: all .2s ease-in-out; transition: all .2s ease-in-out; display: inline-block; color: #424242; padding: 20px 5px; }
+.post-stub a { -webkit-transition: all .2s ease-in-out; -moz-transition: all .2s ease-in-out; transition: all .2s ease-in-out; display: inline-block; color: #424242; padding: 20px 5px; max-width: 500px;}
 .post-stub a:hover { color: #f03838; padding: 20px 12px; }
 .post-stub a:hover .post-stub-tag {  }
 .post-stub-tag { background: #303030; border-radius: 3px; color: #fff; float: right; font-size: 10px; margin: 7px 0 0; padding: 0 5px; text-transform: uppercase; }
