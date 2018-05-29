@@ -1,13 +1,13 @@
 ---
 title: Removing Pesky Unicode Zero Width Spaces
-author: "Tiernan"
+author: Tiernan
 date: '2018-05-28' 
 slug: removing-pesky-unicode-zero-width-spaces
 draft: false
+categories: R
 tags:
 - regex
-- tips
-categories: R
+- tips 
 ---
 
 ```{r global_options, include=FALSE}
