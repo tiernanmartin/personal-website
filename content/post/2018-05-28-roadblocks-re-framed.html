@@ -1,0 +1,150 @@
+---
+title: Roadblocks Re-framed
+description: Sharing stumbling blocks & lessons-learned
+author: Tiernan
+date: '2018-05-28'
+twitterImg: '/post/2018-05-28-roadblocks-re-framed_files/unexpected-unicode-twitter.png'
+slug: roadblocks-re-framed
+draft: false
+categories:
+  - R
+tags:
+  - regex
+  - workflow
+---
+
+
+
+<p><a href="https://twitter.com/mhink1103/">Matt Hink</a> nailed it with this tweet: {{% tweet "992577065277779968" %}}</p>
+<p>Working with code can be a frustrating experience: one minute you’re power-drunk, amazed by your own cleverness; the next you’re desperately searching Stackoverflow for an answer to some obscure issue that has completely derailed your project.</p>
+<p>While we’d all prefer to work in a frictionless, flowing state of mind where projects progress smoothly, this is not the world we live in. We all get stuck from time to time - in fact, it probably happens to many of us a lot more than we’d care to admit.</p>
+<p>To a certain extent coding and being stuck are two sides of the same coin. This post explores an idea of how to get the most out of the Being Stuck Experience™ by (you guessed it) writing blog posts!</p>
+<div id="re-framing" class="section level3">
+<h3>Re-framing</h3>
+<p>One strategy that seems to help is to re-frame roadblocks as opportunities to share new knowledge with others. The popularity of blogging and tweeting about R is a testament to the benefits of this approach: you struggle, you overcome, you share, and you build recognition by helping others. Shifting the focus from overcoming the immediate problem to expanding your understanding makes it easier to be patient with yourself. And as an added bonus, the process of writing up your solution helps reinforce the lesson in your own mind and creates an easily accessible resource to return to when you inevitably forget how you solved the problem.</p>
+</div>
+<div id="example" class="section level3">
+<h3>Example</h3>
+<p>Here is a recent example of this situation from my work at <a href="futurewise.org">Futurewise</a>.</p>
+<p>I needed a list of the names of each government agency in King County, Washington. Luckily, someone had created this exact list and posted it as a <a href="https://data.kingcounty.gov/County-Operations/King-County-Departments-and-Divisions/uf8z-zznc">dataset</a> on King County’s public data portal:</p>
+<p><a href="https://data.kingcounty.gov/County-Operations/King-County-Departments-and-Divisions/uf8z-zznc"><img src="/post/2018-05-28-roadblocks-re-framed_files/socrata-kc-agencies-small.png" alt="King County Departments and Divisions: A list of King County's departments, divisions and elected offices." /></a></p>
+<p><a href="https://socrata.com/">Socrata</a>, the open data platform where this information is hosted, made it easy to access the dataset:</p>
+<div class="figure">
+<img src="/post/2018-05-28-roadblocks-re-framed_files/socrata-api-csv.gif" />
+
+</div>
+<p>But once the data was loaded into R a problem emerged: unexpected unicode characters (e.g., <code>&lt;U+200B&gt;</code>).</p>
+<pre class="r"><code>
+library(tidyverse)
+
+csv_url &lt;- &quot;https://data.kingcounty.gov/resource/es38-6nrz.csv&quot;
+
+agencies &lt;- read_csv(csv_url)
+
+print(as.data.frame(agencies[1:5,]))
+##                                                                                                                      department
+## 1 &lt;U+200B&gt;&lt;U+200B&gt;King County Executive&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;
+## 2 &lt;U+200B&gt;&lt;U+200B&gt;King County Executive&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;
+## 3 &lt;U+200B&gt;&lt;U+200B&gt;King County Executive&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;
+## 4 &lt;U+200B&gt;&lt;U+200B&gt;King County Executive&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;
+## 5 &lt;U+200B&gt;&lt;U+200B&gt;King County Executive&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;
+##                                     division
+## 1                                       &lt;NA&gt;
+## 2                    Office of the Executive
+## 3 Office of Performance, Strategy and Budget
+## 4          Office of Labor Relations&lt;U+200B&gt;
+## 5  Office of Economic and Financial Analysis</code></pre>
+<p>These happened to be “invisible” zero-width space characters which are used in computerized typesetting to control word spacing and line-breaks <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>. I wasn’t working on a tight deadline with this particular project, so I decided to spend a little time cleaning up the data. But that proved harder than expected.</p>
+<p><code>R</code>’s package ecosystem provides tools for working with text<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a> as well as unicode<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a>. My first approach was to try to trim the pesky invisible spaces using the <a href="http://stringr.tidyverse.org/"><code>stringr</code></a> package. That didn’t work:</p>
+<pre class="r"><code>zwsp_pattern &lt;- &quot;&lt;U+200B&gt;&quot;
+
+agencies %&gt;% 
+  mutate_all(funs(str_replace_all(.,zwsp_pattern,&quot;&quot;))) %&gt;% 
+  slice(1:5) %&gt;% 
+  as.data.frame()
+##                                                                                                                      department
+## 1 &lt;U+200B&gt;&lt;U+200B&gt;King County Executive&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;
+## 2 &lt;U+200B&gt;&lt;U+200B&gt;King County Executive&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;
+## 3 &lt;U+200B&gt;&lt;U+200B&gt;King County Executive&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;
+## 4 &lt;U+200B&gt;&lt;U+200B&gt;King County Executive&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;
+## 5 &lt;U+200B&gt;&lt;U+200B&gt;King County Executive&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;
+##                                     division
+## 1                                       &lt;NA&gt;
+## 2                    Office of the Executive
+## 3 Office of Performance, Strategy and Budget
+## 4          Office of Labor Relations&lt;U+200B&gt;
+## 5  Office of Economic and Financial Analysis</code></pre>
+<p>Frustrated, I turned to Google:</p>
+<div class="figure">
+<img src="/post/2018-05-28-roadblocks-re-framed_files/google-search-remove-unicode.gif" />
+
+</div>
+<p>The first suggested link was a similar <a href="https://stackoverflow.com/q/38828620">question</a> on Stackoverflow. I gave the top-voted <a href="https://stackoverflow.com/a/38828621">solution</a> a try and was pleased with the result:</p>
+<pre class="r"><code>agencies %&gt;% 
+  mutate_all(funs(iconv(.,&#39;utf-8&#39;, &#39;ascii&#39;, sub=&#39;&#39;))) %&gt;% 
+  slice(1:5) %&gt;% 
+  as.data.frame()
+##              department                                   division
+## 1 King County Executive                                       &lt;NA&gt;
+## 2 King County Executive                    Office of the Executive
+## 3 King County Executive Office of Performance, Strategy and Budget
+## 4 King County Executive                  Office of Labor Relations
+## 5 King County Executive  Office of Economic and Financial Analysis</code></pre>
+<p>At this point I had resolved the immediate problem and could move on but a question was bugging me: why was my first approach unsuccessful? Converting all of the <code>UTF-8</code> characters to <code>ASCII</code> worked for this use case but it is pretty heavy-handed - what if I only wanted to remove the zero-width escapes?</p>
+<p>With these questions in mind, I decided to dig into the problem a little further. My first step was to consult the Regular Expressions cheatsheet from RStudio’s Cheatsheet <a href="https://www.rstudio.com/resources/cheatsheets/">collection</a>:</p>
+<p><a href="https://www.rstudio.com/wp-content/uploads/2016/09/RegExCheatsheet.pdf"><img src="/post/2018-05-28-roadblocks-re-framed_files/rstudio-cheatsheet-regex.png" alt="Regular Expressions: Basics of regular expressions and pattern matching in R by Ian Kopacka. Updated 09/16." /></a></p>
+<p>Oddly, there was no mention of how to target unicode characters. Googling “r regex unicode” led me to the <code>stringr</code> <a href="https://cran.r-project.org/web/packages/stringr/vignettes/regular-expressions.html">vignette</a> which contained the answer:</p>
+<p><a href="https://cran.r-project.org/web/packages/stringr/vignettes/regular-expressions.html#special-characters"><img src="/post/2018-05-28-roadblocks-re-framed_files/stringr-vignette.png" alt="stringr Vignette: Regular Expressions." /></a></p>
+<p>Unicode characters can be encoded in the five ways shown above. In order to target this pattern in a regular expression, the leading front-slash needs to be “escaped” with another front-slash like so: <code>\\uhhhh</code>.</p>
+<p>With the correct regular expression my original approach successfully removed the zero-width spaces:</p>
+<pre class="r"><code>zwsp_pattern &lt;- &quot;\\u200b&quot;
+
+agencies %&gt;% 
+  mutate_all(funs(str_replace_all(.,zwsp_pattern,&quot;&quot;))) %&gt;% 
+  slice(1:5) %&gt;% 
+  as.data.frame()
+##              department                                   division
+## 1 King County Executive                                       &lt;NA&gt;
+## 2 King County Executive                    Office of the Executive
+## 3 King County Executive Office of Performance, Strategy and Budget
+## 4 King County Executive                  Office of Labor Relations
+## 5 King County Executive  Office of Economic and Financial Analysis</code></pre>
+<p>So it turned out that this unicode problem was a fairly minor roadblock in the end. If you work with code regularly you no doubt encounter and overcome this type of obstacle on a daily basis. I took the new knowledge gained while troubleshooting this issue and consolidated it into a short <a href="/2018/05/28/removing-pesky-unicode-zero-width-spaces/">note</a> in the <a href="/note/">Notepad</a> section of this site: Title.</p>
+<p>And then I moved on with my project, confident that I could tackle any further unicode issues that might arise and that the extra time taken to dive into the problem was well-spent. Not only had I solved the immediate problem and improved my understanding of the tools needed to solve it, but I also captured this new understanding in a way that could potentially benefit others - including myself when I inevitably forget this lesson and need to re-learn it!</p>
+</div>
+<div id="conclusion" class="section level3">
+<h3>Conclusion</h3>
+<p>Re-framing roadblocks as shareable learning opportunities is a powerful idea: it provides an incentive for gaining a richer understanding of programming fundamentals and/or specific tools while mitigating the impact of the uncomfortable (yet all-too-common) feeling of being stuck on a project.</p>
+<p>It is important, however, to point out the risk of this approach: the endless pursuit of an elusive solution down one rabbit hole after another can turn into another form of procrastination. It takes a certain amount of self-restraint to avoid this trap, but in my experience this gets easier over time and you can increase your willpower by exercising it like a muscle.</p>
+<p>The product of these self-guided explorations can take many forms:</p>
+<ul>
+<li>a <a href="https://help.github.com/articles/about-gists/">gist</a> or short note to youself</li>
+<li>a post on <a href="https://stackoverflow.com/questions/tagged/r">Stackoverflow</a> or the <a href="https://community.rstudio.com/">RStudio Community Forum</a></li>
+<li>a tweet or blog post</li>
+<li>a Youtube screencast<a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a></li>
+</ul>
+<p>I recently started tracking my own lessons-learned in the <a href="/note/">Notepad</a> section of this blog. It’s currently pretty sparse but I plan to add to it over time.</p>
+<p>There’s certainly no shortage of new roadblocks to overcome.</p>
+</div>
+<div id="diy-feedback" class="section level3">
+<h3>DIY &amp; Feedback</h3>
+<p>If you’d like to reproduce this example on your own computer please download the <a href="https://gist.github.com/tiernanmartin/54f6d839dd8de8f75fd966e8e5b65bad">gist</a>.</p>
+<p>Questions, feedback, and suggested improvements are always welcome!</p>
+</div>
+<div id="resources" class="section level3">
+<h3>Resources</h3>
+<ul>
+<li><code>stringr</code> <a href="https://cran.r-project.org/web/packages/stringr/vignettes/regular-expressions.html">vignette</a></li>
+<li>Stackoverflow question about removing unicode characters: <a href="https://stackoverflow.com/q/38828620">How to remove strange characters using gsub in R?</a></li>
+<li>FileFormate.Info: <a href="https://www.fileformat.info/info/unicode/char/a.htm">A to Z Index of Unicode Characters: starting with ‘A’</a></li>
+</ul>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>Wikipedia: <a href="https://en.wikipedia.org/wiki/Zero-width_space">“Zero-width space”“</a><a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p>String manipulation packages: <a href="http://stringr.tidyverse.org/"><code>stringr</code></a>; <a href="https://cran.r-project.org/web/packages/stringi/index.html"><code>stringi</code></a>; <a href="http://glue.tidyverse.org/"><code>glue</code></a><a href="#fnref2">↩</a></p></li>
+<li id="fn3"><p>Encoding functions/packages: <a href=""><code>base::iconv()</code></a>; <a href="https://cran.r-project.org/web/packages/Unicode/Unicode.pdf"><code>Unicode</code></a>; <a href="https://cran.r-project.org/web/packages/utf8/utf8.pdf"><code>utf8</code></a><a href="#fnref3">↩</a></p></li>
+<li id="fn4"><p>Youtube channels to follow: <a href="https://www.youtube.com/channel/UCxOhDvtaoXDAB336AolWs3A">Hadley Wickham</a>; <a href="https://www.youtube.com/user/rdpeng">Roger Peng</a><a href="#fnref4">↩</a></p></li>
+</ol>
+</div>

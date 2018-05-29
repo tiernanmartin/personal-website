@@ -1,0 +1,147 @@
+---
+title: Roadblocks Re-framed
+description: Sharing stumbling blocks & lessons-learned
+author: Tiernan
+date: '2018-05-28'
+twitterImg: '/post/2018-05-28-roadblocks-re-framed_files/unexpected-unicode-twitter.png'
+slug: roadblocks-re-framed 
+categories:
+  - R
+tags:
+  - regex
+  - workflow
+---
+
+```{r global_options, include=FALSE}
+options(tidyverse.quiet = TRUE)
+knitr::opts_chunk$set(collapse=TRUE, warning=FALSE, message=FALSE)
+
+```
+
+[Matt Hink](https://twitter.com/mhink1103/) nailed it with this tweet:
+```{r, echo=FALSE}
+blogdown::shortcode("tweet","992577065277779968")
+```
+
+Working with code can be a frustrating experience: one minute you’re power-drunk, amazed by your own cleverness; the next you’re desperately searching Stackoverflow for an answer to some obscure issue that has completely derailed your project.
+
+While we’d all prefer to work in a frictionless, flowing state of mind where projects progress smoothly, this is not the world we live in. We all get stuck from time to time - in fact, it probably happens to many of us a lot more than we'd care to admit.
+
+To a certain extent coding and being stuck are two sides of the same coin. This post explores an idea of how to get the most out of the Being Stuck Experience™ by (you guessed it) writing blog posts!
+
+### Re-framing
+
+One strategy that seems to help is to re-frame roadblocks as opportunities to share new knowledge with others. The popularity of blogging and tweeting about R is a testament to the benefits of this approach: you struggle, you overcome, you share, and you build recognition by helping others. Shifting the focus from overcoming the immediate problem to expanding your understanding makes it easier to be patient with yourself. And as an added bonus, the process of writing up your solution helps reinforce the lesson in your own mind and creates an easily accessible resource to return to when you inevitably forget how you solved the problem.
+
+### Example
+
+Here is a recent example of this  situation from my work at [Futurewise](futurewise.org). 
+
+I needed a list of the names of each government agency in King County, Washington. Luckily, someone had created this exact list and posted it as a [dataset](https://data.kingcounty.gov/County-Operations/King-County-Departments-and-Divisions/uf8z-zznc) on King County’s public data portal: 
+
+<a href="https://data.kingcounty.gov/County-Operations/King-County-Departments-and-Divisions/uf8z-zznc"><img src="/post/2018-05-28-roadblocks-re-framed_files/socrata-kc-agencies-small.png" alt="King County Departments and Divisions: A list of King County's departments, divisions and elected offices." /></a>
+
+[Socrata](https://socrata.com/), the open data platform where this information is hosted, made it easy to access the dataset:
+
+![](/post/2018-05-28-roadblocks-re-framed_files/socrata-api-csv.gif)
+
+But once the data was loaded into R a problem emerged: unexpected unicode characters (e.g., `<U+200B>`). 
+
+```{r load-kc-csv}
+
+library(tidyverse)
+
+csv_url <- "https://data.kingcounty.gov/resource/es38-6nrz.csv"
+
+agencies <- read_csv(csv_url)
+
+print(as.data.frame(agencies[1:5,]))
+
+```
+
+These happened to be “invisible” zero-width space characters which are used in computerized typesetting to control word spacing and line-breaks ^[Wikipedia: ["Zero-width space""](https://en.wikipedia.org/wiki/Zero-width_space)]. I wasn’t working on a tight deadline with this particular project, so I decided to spend a little time cleaning up the data. But that proved harder than expected. 
+
+`R`’s package ecosystem provides tools for working with text^[String manipulation packages: [`stringr`](http://stringr.tidyverse.org/); [`stringi`](https://cran.r-project.org/web/packages/stringi/index.html); [`glue`](http://glue.tidyverse.org/)
+] as well as unicode^[Encoding functions/packages: [`base::iconv()`](); [`Unicode`](https://cran.r-project.org/web/packages/Unicode/Unicode.pdf); [`utf8`](https://cran.r-project.org/web/packages/utf8/utf8.pdf)]. My first approach was to try to trim the pesky invisible spaces using the [`stringr`](http://stringr.tidyverse.org/) package. That didn’t work:
+
+
+```{r kc-stringr}
+zwsp_pattern <- "<U+200B>"
+
+agencies %>% 
+  mutate_all(funs(str_replace_all(.,zwsp_pattern,""))) %>% 
+  slice(1:5) %>% 
+  as.data.frame()
+```
+
+Frustrated, I turned to Google:
+
+![](/post/2018-05-28-roadblocks-re-framed_files/google-search-remove-unicode.gif)
+
+The first suggested link was a similar [question](https://stackoverflow.com/q/38828620) on Stackoverflow. I gave the top-voted [solution](https://stackoverflow.com/a/38828621) a try and was pleased with the result: 
+
+```{r}
+agencies %>% 
+  mutate_all(funs(iconv(.,'utf-8', 'ascii', sub=''))) %>% 
+  slice(1:5) %>% 
+  as.data.frame()
+```
+
+At this point I had resolved the immediate problem and could move on but a question was bugging me: why was my first approach unsuccessful? Converting all of the `UTF-8` characters to `ASCII` worked for this use case but it is pretty heavy-handed - what if I only wanted to remove the zero-width escapes? 
+
+With these questions in mind, I decided to dig into the problem a little further. My first step was to consult the Regular Expressions cheatsheet from RStudio's Cheatsheet [collection](https://www.rstudio.com/resources/cheatsheets/): 
+
+<a href="https://www.rstudio.com/wp-content/uploads/2016/09/RegExCheatsheet.pdf"><img src="/post/2018-05-28-roadblocks-re-framed_files/rstudio-cheatsheet-regex.png" alt="Regular Expressions: Basics of regular expressions and pattern matching in R by Ian Kopacka. Updated 09/16." /></a>
+
+Oddly, there was no mention of how to target unicode characters. Googling “r regex unicode” led me to the `stringr` [vignette](https://cran.r-project.org/web/packages/stringr/vignettes/regular-expressions.html) which contained the answer:
+
+<a href="https://cran.r-project.org/web/packages/stringr/vignettes/regular-expressions.html#special-characters"><img src="/post/2018-05-28-roadblocks-re-framed_files/stringr-vignette.png" alt="stringr Vignette: Regular Expressions." /></a>
+
+Unicode characters can be encoded in the five ways shown above. In order to target this pattern in a regular expression, the leading front-slash needs to be "escaped" with another front-slash like so: `\\uhhhh`. 
+
+With the correct regular expression my original approach successfully removed the zero-width spaces:
+
+```{r}
+zwsp_pattern <- "\\u200b"
+
+agencies %>% 
+  mutate_all(funs(str_replace_all(.,zwsp_pattern,""))) %>% 
+  slice(1:5) %>% 
+  as.data.frame()
+
+```
+
+
+So it turned out that this unicode problem was a fairly minor roadblock in the end. If you work with code regularly you no doubt encounter and overcome this type of obstacle on a daily basis. I took the new knowledge gained while troubleshooting this issue and consolidated it into a short [note](/2018/05/28/removing-pesky-unicode-zero-width-spaces/) in the [Notepad](/note/) section of this site: Title.
+
+And then I moved on with my project, confident that I could tackle any further unicode issues that might arise and that the extra time taken to dive into the problem was well-spent. Not only had I solved the immediate problem and improved my understanding of the tools needed to solve it, but I also captured this new understanding in a way that could potentially benefit others - including myself when I inevitably forget this lesson and need to re-learn it!
+
+### Conclusion
+
+Re-framing roadblocks as shareable learning opportunities is a powerful idea: it provides an incentive for gaining a richer understanding of programming fundamentals and/or specific tools while mitigating the impact of the uncomfortable (yet all-too-common) feeling of being stuck on a project.
+
+It is important, however, to point out the risk of this approach: the endless pursuit of an elusive solution down one rabbit hole after another can turn into another form of procrastination. It takes a certain amount of self-restraint to avoid this trap, but in my experience this gets easier over time and you can increase your willpower by exercising it like a muscle.
+
+The product of these self-guided explorations can take many forms: 
+
+  + a [gist](https://help.github.com/articles/about-gists/) or short note to youself
+  + a post on [Stackoverflow](https://stackoverflow.com/questions/tagged/r) or the [RStudio Community Forum](https://community.rstudio.com/)
+  + a tweet or blog post
+  + a Youtube screencast^[Youtube channels to follow: [Hadley Wickham](https://www.youtube.com/channel/UCxOhDvtaoXDAB336AolWs3A); [Roger Peng](https://www.youtube.com/user/rdpeng)]
+  
+I recently started tracking my own lessons-learned in the [Notepad](/note/) section of this blog. It’s currently pretty sparse but I plan to add to it over time.
+
+There’s certainly no shortage of new roadblocks to overcome.
+
+### DIY & Feedback
+
+If you'd like to reproduce this example on your own computer please download the [gist](https://gist.github.com/tiernanmartin/54f6d839dd8de8f75fd966e8e5b65bad).
+
+Questions, feedback, and suggested improvements are always welcome!
+
+### Resources
+
+  + `stringr` [vignette](https://cran.r-project.org/web/packages/stringr/vignettes/regular-expressions.html) 
+  + Stackoverflow question about removing unicode characters: [How to remove strange characters using gsub in R?](https://stackoverflow.com/q/38828620)
+  + FileFormate.Info: [A to Z Index of Unicode Characters: starting with 'A'](https://www.fileformat.info/info/unicode/char/a.htm)
+  
