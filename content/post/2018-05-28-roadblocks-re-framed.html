@@ -94,7 +94,7 @@ agencies %&gt;%
 <p><a href="https://www.rstudio.com/wp-content/uploads/2016/09/RegExCheatsheet.pdf"><img src="/post/2018-05-28-roadblocks-re-framed_files/rstudio-cheatsheet-regex.png" alt="Regular Expressions: Basics of regular expressions and pattern matching in R by Ian Kopacka. Updated 09/16." /></a></p>
 <p>Oddly, there was no mention of how to target unicode characters. Googling “r regex unicode” led me to the <code>stringr</code> <a href="https://cran.r-project.org/web/packages/stringr/vignettes/regular-expressions.html">vignette</a> which contained the answer:</p>
 <p><a href="https://cran.r-project.org/web/packages/stringr/vignettes/regular-expressions.html#special-characters"><img src="/post/2018-05-28-roadblocks-re-framed_files/stringr-vignette.png" alt="stringr Vignette: Regular Expressions." /></a></p>
-<p>Unicode characters can be encoded in the five ways shown above. In order to target this pattern in a regular expression, the leading front-slash needs to be “escaped” with another front-slash like so: <code>\\uhhhh</code>.</p>
+<p>Unicode characters can be specified in the five ways shown above. In order to target this pattern in a regular expression, the leading front-slash needs to be “escaped” with another front-slash like so: <code>\\uhhhh</code>.</p>
 <p>With the correct regular expression my original approach successfully removed the zero-width spaces:</p>
 <pre class="r"><code>zwsp_pattern &lt;- &quot;\\u200b&quot;
 
@@ -108,7 +108,7 @@ agencies %&gt;%
 ## 3 King County Executive Office of Performance, Strategy and Budget
 ## 4 King County Executive                  Office of Labor Relations
 ## 5 King County Executive  Office of Economic and Financial Analysis</code></pre>
-<p>So it turned out that this unicode problem was a fairly minor roadblock in the end. If you work with code regularly you no doubt encounter and overcome this type of obstacle on a daily basis. I took the new knowledge gained while troubleshooting this issue and consolidated it into a short <a href="/2018/05/28/removing-pesky-unicode-zero-width-spaces/">note</a> in the <a href="/note/">Notepad</a> section of this site: Title.</p>
+<p>So it turned out that this unicode problem was a fairly minor roadblock in the end. If you work with code regularly you no doubt encounter and overcome this type of obstacle on a daily basis. I took the new knowledge gained while troubleshooting this issue and consolidated it into a short note in the <a href="/note/">Notepad</a> section of this site: <a href="/2018/05/28/removing-pesky-unicode-zero-width-spaces/">“Removing Pesky Unicode Zero-Width Spaces”</a></p>
 <p>And then I moved on with my project, confident that I could tackle any further unicode issues that might arise and that the extra time taken to dive into the problem was well-spent. Not only had I solved the immediate problem and improved my understanding of the tools needed to solve it, but I also captured this new understanding in a way that could potentially benefit others - including myself when I inevitably forget this lesson and need to re-learn it!</p>
 </div>
 <div id="conclusion" class="section level3">
@@ -122,8 +122,7 @@ agencies %&gt;%
 <li>a tweet or blog post</li>
 <li>a Youtube screencast<a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a></li>
 </ul>
-<p>I recently started tracking my own lessons-learned in the <a href="/note/">Notepad</a> section of this blog. It’s currently pretty sparse but I plan to add to it over time.</p>
-<p>There’s certainly no shortage of new roadblocks to overcome.</p>
+<p>I recently started tracking my own lessons-learned in the <a href="/note/">Notepad</a> section of this blog. It’s currently pretty sparse but I plan to add to it over time - there’s certainly no shortage of new roadblocks to overcome.</p>
 </div>
 <div id="diy-feedback" class="section level3">
 <h3>DIY &amp; Feedback</h3>
