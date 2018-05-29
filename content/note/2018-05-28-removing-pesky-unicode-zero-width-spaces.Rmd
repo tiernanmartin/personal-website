@@ -1,0 +1,101 @@
+---
+title: "Removing Pesky Unicode Zero Width Spaces"
+author: "Tiernan"
+date: '2018-05-28' 
+slug: removing-pesky-unicode-zero-width-spaces
+tags:
+- regex
+- tips
+categories: R
+---
+
+```{r global_options, include=FALSE}
+options(tidyverse.quiet = TRUE)
+knitr::opts_chunk$set(collapse=TRUE, warning=FALSE, comment='##')
+
+```
+
+```{r load_packages, include=FALSE} 
+library(stringi)
+library(tidyverse)
+```
+
+I recently ran into a problem while downloading a dataset: the character strings contained unwanted zero-width spaces (`<U+200B>`).
+
+These characters are unicode characters used to adjust word spacing and line breaks (see this Wikipedia [article](https://en.wikipedia.org/wiki/Zero-width_space) for more information).
+
+Below is a brief exploration of this particular unicode character followed by two ways to remove it:
+
+  + Targeted approach: `str_replace_all("string","\\u200b","")`
+  + Generalized approach: `iconv("string", "utf-8", "ascii", sub="")`
+
+### Exploring the unicode zero-width space character: `<U+200B>`
+```{r explore_unicode}
+a <- "\u200b"
+
+# Print unicode
+print(a)
+
+# Print escaped unicode
+stri_escape_unicode(a)
+
+# Replace the unicode with an empty string
+a_no_unicode <- str_replace(a,"\\u200b","")
+
+# Print the revised string
+print(a_no_unicode)
+
+# Print the escaped unicode version of the revised string (just to double-check)
+stri_escape_unicode(a_no_unicode)
+
+
+```
+
+```{r table}
+# Compare the results in a table
+tibble("print(a)" = a,
+       "stri_escape_unicode(a)" = stri_escape_unicode(a),
+       "print(a_no_unicode)" = a_no_unicode,
+       "stri_escape_unicode(a_no_unicode)" = stri_escape_unicode(a_no_unicode))
+
+```
+
+
+### Example with data from the wild
+```{r kc-agency-example}
+csv_url <- "https://data.kingcounty.gov/resource/es38-6nrz.csv"
+
+agencies <- read_csv(csv_url)
+
+# Print data with unicode characters
+print(as.data.frame(agencies[1:5,]))
+
+# Targeting the exact text doesn't work
+zwsp_pattern_first <- "<U+200B>"
+
+agencies %>% 
+  mutate_all(funs(str_replace_all(.,zwsp_pattern_first,""))) %>% 
+  slice(1:5) %>% 
+  as.data.frame()
+
+# Escaping the unicode does work
+zwsp_pattern_second <- "\\u200b"
+
+agencies %>% 
+  mutate_all(funs(str_replace_all(.,zwsp_pattern_second,""))) %>% 
+  slice(1:5) %>% 
+  as.data.frame()
+
+# Or convert the whole thing from UTF-8 to ASCII using base::iconv()
+agencies %>% 
+  mutate_all(funs(iconv(.,'utf-8', 'ascii', sub=''))) %>% 
+  slice(1:5) %>% 
+  as.data.frame()
+
+```
+
+### Resources
+
+  + `stringr` [vignette](https://cran.r-project.org/web/packages/stringr/vignettes/regular-expressions.html) 
+  + Stackoverflow question about removing unicode characters: [How to remove strange characters using gsub in R?](https://stackoverflow.com/q/38828620)
+  + FileFormate.Info: [A to Z Index of Unicode Characters: starting with 'A'](https://www.fileformat.info/info/unicode/char/a.htm)

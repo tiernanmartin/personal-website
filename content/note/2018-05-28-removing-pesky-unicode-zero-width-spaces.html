@@ -1,0 +1,133 @@
+---
+title: "Removing Pesky Unicode Zero Width Spaces"
+author: "Tiernan"
+date: '2018-05-28'
+draft: yes
+slug: removing-pesky-unicode-zero-width-spaces
+tags:
+- regex
+- tips
+categories: R
+---
+
+
+
+<p>I recently ran into a problem while downloading a dataset: the character strings contained unwanted zero-width spaces (<code>&lt;U+200B&gt;</code>).</p>
+<p>These characters are unicode characters used to adjust word spacing and line breaks (see this Wikipedia <a href="https://en.wikipedia.org/wiki/Zero-width_space">article</a> for more information).</p>
+<p>Below is a brief exploration of this particular unicode character followed by two ways to remove it:</p>
+<ul>
+<li>Targeted approach: <code>str_replace_all(&quot;string&quot;,&quot;\\u200b&quot;,&quot;&quot;)</code></li>
+<li>Generalized approach: <code>iconv(&quot;string&quot;, &quot;utf-8&quot;, &quot;ascii&quot;, sub=&quot;&quot;)</code></li>
+</ul>
+<div id="exploring-the-unicode-zero-width-space-character-u200b" class="section level3">
+<h3>Exploring the unicode zero-width space character: <code>&lt;U+200B&gt;</code></h3>
+<pre class="r"><code>a &lt;- &quot;\u200b&quot;
+
+# Print unicode
+print(a)
+## [1] &quot;&lt;U+200B&gt;&quot;
+
+# Print escaped unicode
+stri_escape_unicode(a)
+## [1] &quot;\\u200b&quot;
+
+# Replace the unicode with an empty string
+a_no_unicode &lt;- str_replace(a,&quot;\\u200b&quot;,&quot;&quot;)
+
+# Print the revised string
+print(a_no_unicode)
+## [1] &quot;&quot;
+
+# Print the escaped unicode version of the revised string (just to double-check)
+stri_escape_unicode(a_no_unicode)
+## [1] &quot;&quot;</code></pre>
+<pre class="r"><code># Compare the results in a table
+tibble(&quot;print(a)&quot; = a,
+       &quot;stri_escape_unicode(a)&quot; = stri_escape_unicode(a),
+       &quot;print(a_no_unicode)&quot; = a_no_unicode,
+       &quot;stri_escape_unicode(a_no_unicode)&quot; = stri_escape_unicode(a_no_unicode))
+## # A tibble: 1 x 4
+##   `print(a)` `stri_escape_unicode(a)` `print(a_no_unic~ `stri_escape_unic~
+##   &lt;chr&gt;      &lt;chr&gt;                    &lt;chr&gt;             &lt;chr&gt;             
+## 1 &lt;U+200B&gt;           &quot;\\u200b&quot;                &quot;&quot;                &quot;&quot;</code></pre>
+</div>
+<div id="example-with-data-from-the-wild" class="section level3">
+<h3>Example with data from the wild</h3>
+<pre class="r"><code>csv_url &lt;- &quot;https://data.kingcounty.gov/resource/es38-6nrz.csv&quot;
+
+agencies &lt;- read_csv(csv_url)
+## Parsed with column specification:
+## cols(
+##   department = col_character(),
+##   division = col_character()
+## )
+
+# Print data with unicode characters
+print(as.data.frame(agencies[1:5,]))
+##                                                                                                                      department
+## 1 &lt;U+200B&gt;&lt;U+200B&gt;King County Executive&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;
+## 2 &lt;U+200B&gt;&lt;U+200B&gt;King County Executive&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;
+## 3 &lt;U+200B&gt;&lt;U+200B&gt;King County Executive&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;
+## 4 &lt;U+200B&gt;&lt;U+200B&gt;King County Executive&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;
+## 5 &lt;U+200B&gt;&lt;U+200B&gt;King County Executive&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;
+##                                     division
+## 1                                       &lt;NA&gt;
+## 2                    Office of the Executive
+## 3 Office of Performance, Strategy and Budget
+## 4          Office of Labor Relations&lt;U+200B&gt;
+## 5  Office of Economic and Financial Analysis
+
+# Targeting the exact text doesn&#39;t work
+zwsp_pattern_first &lt;- &quot;&lt;U+200B&gt;&quot;
+
+agencies %&gt;% 
+  mutate_all(funs(str_replace_all(.,zwsp_pattern_first,&quot;&quot;))) %&gt;% 
+  slice(1:5) %&gt;% 
+  as.data.frame()
+##                                                                                                                      department
+## 1 &lt;U+200B&gt;&lt;U+200B&gt;King County Executive&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;
+## 2 &lt;U+200B&gt;&lt;U+200B&gt;King County Executive&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;
+## 3 &lt;U+200B&gt;&lt;U+200B&gt;King County Executive&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;
+## 4 &lt;U+200B&gt;&lt;U+200B&gt;King County Executive&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;
+## 5 &lt;U+200B&gt;&lt;U+200B&gt;King County Executive&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;&lt;U+200B&gt;
+##                                     division
+## 1                                       &lt;NA&gt;
+## 2                    Office of the Executive
+## 3 Office of Performance, Strategy and Budget
+## 4          Office of Labor Relations&lt;U+200B&gt;
+## 5  Office of Economic and Financial Analysis
+
+# Escaping the unicode does work
+zwsp_pattern_second &lt;- &quot;\\u200b&quot;
+
+agencies %&gt;% 
+  mutate_all(funs(str_replace_all(.,zwsp_pattern_second,&quot;&quot;))) %&gt;% 
+  slice(1:5) %&gt;% 
+  as.data.frame()
+##              department                                   division
+## 1 King County Executive                                       &lt;NA&gt;
+## 2 King County Executive                    Office of the Executive
+## 3 King County Executive Office of Performance, Strategy and Budget
+## 4 King County Executive                  Office of Labor Relations
+## 5 King County Executive  Office of Economic and Financial Analysis
+
+# Or convert the whole thing from UTF-8 to ASCII using base::iconv()
+agencies %&gt;% 
+  mutate_all(funs(iconv(.,&#39;utf-8&#39;, &#39;ascii&#39;, sub=&#39;&#39;))) %&gt;% 
+  slice(1:5) %&gt;% 
+  as.data.frame()
+##              department                                   division
+## 1 King County Executive                                       &lt;NA&gt;
+## 2 King County Executive                    Office of the Executive
+## 3 King County Executive Office of Performance, Strategy and Budget
+## 4 King County Executive                  Office of Labor Relations
+## 5 King County Executive  Office of Economic and Financial Analysis</code></pre>
+</div>
+<div id="resources" class="section level3">
+<h3>Resources</h3>
+<ul>
+<li><code>stringr</code> <a href="https://cran.r-project.org/web/packages/stringr/vignettes/regular-expressions.html">vignette</a></li>
+<li>Stackoverflow question about removing unicode characters: <a href="https://stackoverflow.com/q/38828620">How to remove strange characters using gsub in R?</a></li>
+<li>FileFormate.Info: <a href="https://www.fileformat.info/info/unicode/char/a.htm">A to Z Index of Unicode Characters: starting with ‘A’</a></li>
+</ul>
+</div>
